@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 
 
-class CouseConnectController extends Controller
+class Cause_ConnectController extends Controller
 {
     public function store(Request $request)
     {
@@ -36,7 +36,8 @@ class CouseConnectController extends Controller
         //トランザクションを開始
         DB::beginTransaction();
 
-        try {
+        try
+        {
             // 住所を登録
             $address = Address::create([
                 'pref_id' => $request->pref_id,      //都道府県ID
@@ -52,7 +53,8 @@ class CouseConnectController extends Controller
             Log::info('Generated Address ID: ' . $addressId);
 
             //アドレスIDがnullか判別
-            if (is_null($addressId)) {
+            if (is_null($addressId))
+            {
                 Log::error('Address ID is null.');
             }
 
@@ -76,7 +78,9 @@ class CouseConnectController extends Controller
             // トランザクションをコミット
             DB::commit();
 
-        } catch (\Exception $e) {
+        }
+        catch(\Exception $e)
+        {
             // エラー発生時はトランザクションをロールバック(保存を取り消し)
             DB::rollBack();
             Log::error($e->getMessage());                   //エラーログを記録
@@ -90,7 +94,7 @@ class CouseConnectController extends Controller
     // ログイン処理
     public function login(Request $request)
     {
-        try {
+        try{
             // バリデーション：メールアドレスとパスワードが必須
             // $request->validate([
             //     'email' => 'required|email', // メールアドレスが必須かつ有効な形式
@@ -104,11 +108,12 @@ class CouseConnectController extends Controller
                 'user_email' => $user->email,
                 'user_password' => $user->password,
                 '$request_email' => $request->email,
-                '$request_password' => $request->password,
+                '$request_password' => $request ->password,
             ]);
 
             // メールアドレスとパスワードが一致する場合
-            if ($request->email == $user->email && $request->password == $user->password) {
+            if ($request->email == $user->email && $request->password  == $user->password)
+            {
 
                 // トークンの生成(Sanctum を使用)
                 $token = $user->createToken('Personal Access Token')->plainTextToken;
@@ -117,7 +122,7 @@ class CouseConnectController extends Controller
                 return response()->json([
                     'message' => 'Login successful', // 成功メッセージ
                     'token' => $token,               // トークンを返す
-                ]);
+                    ]);
             }
 
             Log::warning('Login failed', [
@@ -128,7 +133,9 @@ class CouseConnectController extends Controller
             // ログイン失敗の場合 (認証エラー)
             return response()->json(['message' => 'Invalid credentials'], 401);
 
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             // エラーをログに記録
             Log::error('Login error', [
                 'error' => $e->getMessage(),
@@ -163,14 +170,14 @@ class CouseConnectController extends Controller
         // リクエストに紐づく認証済みユーザーを取得
         $authenticatedUser = $request->user();
 
-        Log::info('authenticatedUser: ' . $authenticatedUser);
+        Log::info('authenticatedUser: '. $authenticatedUser);
 
         // データベースのユーザー情報を再取得
         $user = User::with('address.prefectures') // addressとprefecture情報も一緒に取得
-            ->where('user_id', $authenticatedUser->user_id)
-            ->first();
+        ->where('user_id', $authenticatedUser->user_id)
+        ->first();
 
-        Log::info('user' . $user);
+        Log::info('user'. $user);
 
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
@@ -185,12 +192,61 @@ class CouseConnectController extends Controller
         try {
             $places = Place::all(); // 全データを取得
             \Log::info('Fetched places:', ['data' => $places->toArray()]); // データをログに出力
-            return response()->json($places, 200); // JSONレスポンスを返す
+            return response()->json($places); // JSONレスポンスを返す
         } catch (\Exception $e) {
             \Log::error('Error fetching places:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Failed to fetch places'], 500);
         }
     }
 
-}
+    public function update(Request $request){
 
+        $user = $request->user(); // 認証中のユーザーを取得
+
+        // バリデーションルール
+        // $validator = Validator::make($request->all(), [
+        //     'nickname' => 'required|string|max:50',
+        //     'name' => 'required|string|max:100',
+        //     'kana' => 'required|string|max:100',
+        //     'birth' => 'nullable|date',
+        //     'sex' => 'nullable|string|in:男性,女性,その他',
+        //     'tel' => 'nullable|string|max:20',
+        //     'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+        //     'address.prefectures' => 'nullable|string|max:50',
+        //     'address.address1' => 'nullable|string|max:255',
+        //     'address.address2' => 'nullable|string|max:255',
+        //     'address.post_code' => 'nullable|string|max:10',
+        //     'intro' => 'nullable|string|max:500',
+        // ]);
+
+        // if ($validator->fails()) {
+        //     return response()->json(['errors' => $validator->errors()], 422);
+        // }
+
+        // 住所データの更新
+        if ($user->address) {
+            $user->address->update($request->input('address'));
+        } else {
+            $user->address()->create($request->input('address'));
+        }
+
+        // ユーザーデータの更新
+        $user->fill($request->only([
+            'nickname', 'name', 'kana', 'birth', 'sex', 'tel', 'email', 'intro', 'icon'
+        ]));
+
+        $user->save();
+
+        return response()->json(['message' => 'ユーザー情報が更新されました。', 'user' => $user]);
+    }
+
+    public function destroy(Request $request)
+    {
+        $user = $request->user(); // 認証中のユーザーを取得
+
+        // ユーザー削除
+        $user->delete();
+
+        return response()->json(['message' => 'アカウントが削除されました。']);
+    }
+}

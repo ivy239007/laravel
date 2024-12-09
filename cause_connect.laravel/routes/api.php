@@ -27,7 +27,7 @@ Route::post('/login', [Cause_ConnectController::class, 'login']);
 Route::get('/user', [Cause_ConnectController::class, 'getUser'])->middleware('auth:sanctum');
 Route::post('/logout', [Cause_ConnectController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('/user/me', [Cause_ConnectController::class, 'me'])->middleware('auth:sanctum');
-Route::get('/places', [CouseConnectController::class, 'index']);
+Route::get('/places', [Cause_ConnectController::class, 'index']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/update', [Cause_ConnectController::class, 'update']);
     Route::delete('/user/delete', [Cause_ConnectController::class, 'destroy']);
