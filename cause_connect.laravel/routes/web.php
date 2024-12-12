@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ImageController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -16,6 +16,3 @@ use App\Http\Controllers\ImageController;
 Route::get('/', function () {
     return view('welcome');
 });
-
-Route::post('/images', [ImageController::class, 'store']); // 保存用
-Route::get('/images/{case_id}/{picture_type}', [ImageController::class, 'show']); // 表示用
