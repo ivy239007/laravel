@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Place extends Model
 {
     use HasFactory;
-
     // 実際のテーブル名を指定
     protected $table = 'place';
 }
