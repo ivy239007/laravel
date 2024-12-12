@@ -9,14 +9,9 @@ class Content extends Model
 {
     use HasFactory;
 
-    protected $table = 'content'; //テーブル名を指定
+    protected $table = 'content'; // テーブル名を指定
 
-    protected $fillable = ['case_id', 'picture_type', 'image_path'];
+    protected $fillable = ['case_id', 'picture_type', 'picture']; // 保存可能なカラムを指定
 
-    public $timestamps = false; //タイムスタンプを無効化
-
-    public function request()
-    {
-        return $this->belongsTo(Request::class, 'case_id');
-    }
+    public $timestamps = false; // タイムスタンプを無効化
 }

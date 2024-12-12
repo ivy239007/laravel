@@ -7,13 +7,14 @@ use App\Models\Content;
 
 class ImageUploadController extends Controller
 {
+    // 画像を保存する処理
     public function store(Request $request)
     {
-        $request->validate([
-            'case_id' => 'required|integer',
-            'picture_type' => 'required|integer',
-            'picture' => 'required|image|max:2048',
-        ]);
+        // $request->validate([
+        //     'case_id' => 'required|integer',
+        //     'picture_type' => 'required|integer',
+        //     'picture' => 'required|image|max:2048',
+        // ]);
 
         $imageContent = file_get_contents($request->file('picture')->getRealPath());
 
@@ -26,6 +27,7 @@ class ImageUploadController extends Controller
         return response()->json(['message' => 'Image uploaded successfully'], 201);
     }
 
+    // 画像を取得する処理
     public function show($case_id, $picture_type)
     {
         $content = Content::where('case_id', $case_id)
@@ -38,6 +40,5 @@ class ImageUploadController extends Controller
 
         return response($content->picture)
             ->header('Content-Type', $mimeType);
-
     }
 }
