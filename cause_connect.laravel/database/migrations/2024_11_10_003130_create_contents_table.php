@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('content', function (Blueprint $table) {
             $table->bigInteger('case_id')->unsigned(); // 複合キー対象
             $table->integer('picture_type')->unsigned(); // 複合キー対象
-            $table->binary('picture'); // 非NULL (BLOB)
+            $table->binary('picture')->nullable(); // NULL可能(BLOB)
 
             // 複合主キー
             $table->primary(['case_id', 'picture_type']);
