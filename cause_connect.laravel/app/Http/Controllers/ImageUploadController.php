@@ -7,7 +7,6 @@ use App\Models\Content;
 
 class ImageUploadController extends Controller
 {
-    // 画像を保存する処理
     public function store(Request $request)
     {
         $request->validate([
@@ -27,7 +26,6 @@ class ImageUploadController extends Controller
         return response()->json(['message' => 'Image uploaded successfully'], 201);
     }
 
-    // 画像を取得する処理
     public function show($case_id, $picture_type)
     {
         $content = Content::where('case_id', $case_id)
@@ -40,5 +38,6 @@ class ImageUploadController extends Controller
 
         return response($content->picture)
             ->header('Content-Type', $mimeType);
+
     }
 }

@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Activity_theme extends Model
 {
     use HasFactory;
+
+    protected $table = 'activity_theme'; // テーブル名を明示的に指定
 }

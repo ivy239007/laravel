@@ -5,7 +5,9 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Address;
 use App\Models\Prefectures;
-use App\Models\Place;
+use App\Models\Request as RequestModel; // Requestモデルをインポート
+use App\Models\Sup;
+use App\Models\Content;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;  // DBクラスをインポート
 use Illuminate\Support\Facades\Auth;
@@ -14,9 +16,13 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Cause_ConnectController extends Controller
 {
+    /**
+     * 新規ユーザー登録処理
+     */
     public function store(Request $request)
     {
-        //入力データのバリデーションチェック
+        // 入力データのバリデーション（現在はコメントアウト中）
+        // 必要に応じて再度有効化可能
         // $request->validate([
         //     'password' => 'required|string|min:8',                            //パスワード(8文字以上)
         //     'nickname' => 'required|string|max:20',                           //ニックネーム(20文字以内)　　　
@@ -38,7 +44,7 @@ class Cause_ConnectController extends Controller
 
         try
         {
-            // 住所を登録
+            // 住所情報を登録
             $address = Address::create([
                 'pref_id' => $request->pref_id,      //都道府県ID
                 'address1' => $request->address1,    //住所1
@@ -46,10 +52,10 @@ class Cause_ConnectController extends Controller
                 'post_code' => $request->post_code,  //郵便番号
             ]);
 
-            //登録直後の住所IDを取得
+            //登録した住所IDを取得
             $addressId = $address->address_id;
 
-            //取得したアドレスIDをログに表示
+            //ログに住所IDを取得
             Log::info('Generated Address ID: ' . $addressId);
 
             //アドレスIDがnullか判別
@@ -187,18 +193,6 @@ class Cause_ConnectController extends Controller
         return response()->json($user);
     }
 
-    public function index()
-    {
-        try {
-            $places = Place::all(); // 全データを取得
-            \Log::info('Fetched places:', ['data' => $places->toArray()]); // データをログに出力
-            return response()->json($places, 200); // JSONレスポンスを返す
-        } catch (\Exception $e) {
-            \Log::error('Error fetching places:', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Failed to fetch places'], 500);
-        }
-    }
-
     public function update(Request $request){
 
         $user = $request->user(); // 認証中のユーザーを取得
@@ -223,9 +217,14 @@ class Cause_ConnectController extends Controller
         //     return response()->json(['errors' => $validator->errors()], 422);
         // }
 
+        Log::info('Request Data:'. $user);
+        Log::info('Request Data:'. $user->address);
+
         // 住所データの更新
         if ($user->address) {
             $user->address->update($request->input('address'));
+            $user->address->pref_id = $request->input('address.prefectures.pref_id');
+            $user->address->save();
         } else {
             $user->address()->create($request->input('address'));
         }
@@ -249,4 +248,158 @@ class Cause_ConnectController extends Controller
 
         return response()->json(['message' => 'アカウントが削除されました。']);
     }
+
+    public function stores(Request $request)
+    {
+
+        Log::info('Generated  request: ' . $request);
+
+        // バリデーション
+        // $validated = $request->validate([
+        //     'client_id' => 'required|exists:users,id', // ユーザーIDが存在するか
+        //     'case_name' => 'required|string|max:255',
+        //     'achieve' => 'required|string|max:255',
+        //     'lower_limit' => 'required|integer|min:1',
+        //     'upper_limit' => 'required|integer|min:1',
+        //     'case_date' => 'required|date',
+        //     'start_activty' => 'required|integer|min:0|max:23',
+        //     'end_activty' => 'required|integer|min:0|max:23',
+        //     'address_id' => 'required|exists:addresses,id', // 住所IDが存在するか
+        //     'equipment' => 'nullable|string|max:255',
+        //     'area_id' => 'required|exists:activity_areas,id',
+        //     'theme_id' => 'required|exists:activity_themes,id',
+        //     'rec_age_id' => 'required|exists:recommended_ages,id',
+        //     'feature_id' => 'required|exists:features,id',
+        //     'area_detail' => 'nullable|string',
+        //     'content' => 'nullable|string',
+        //     'contents' => 'nullable|string',
+        //     'state_id' => 'required|integer|exists:states,id', // 状態IDが存在するか
+        // ]);
+
+        //トランザクションを開始
+        DB::beginTransaction();
+
+        try
+        {
+            // 住所情報を登録
+            $address = Address::create([
+                'pref_id' => $request->pref_id,      //都道府県ID
+                'address1' => $request->address1,    //住所1
+                'address2' => $request->address2,    //住所2
+            ]);
+
+            //登録した住所IDを取得
+            $addressId = $address->address_id;
+
+            //ログに住所IDを取得
+            Log::info('Generated Address ID: ' . $addressId);
+
+            //アドレスIDがnullか判別
+            if (is_null($addressId))
+            {
+                Log::error('Address ID is null.');
+            }
+
+            // 依頼情報を登録
+            $case = Request::create([
+                'client_id' => $request->client_id, //依頼者ID
+                'case_name' => $request->case_name, //依頼名
+                'lower_limit' => $request->lower_limit, //下限人数
+                'upper_limit' => $request->upper_limit, //上限人数
+                'exec_date' => $request->exec_date, //活動日
+                'start_activty' => $request->start_activty, // 活動開始時間
+                'end_activty' => $request->end_activty, // 活動終了時間
+                'address_id' => $request->address_id, // 住所ID
+                'equipment' => $request->equipment, //　必要備品
+                'area_id' => $request->area_id, // 活動エリアID
+                'theme_id' => $request->theme_id, // 活動テーマID
+                'rec_age_id' => $request->rec_age_id, // 推奨年齢ID
+                //依頼者が参加か？
+                'feature_id' => $request->feature_id, // 特徴ID
+                'achieve' => $request->achieve, //依頼達成条件
+                'area_detail' => $request->area_detail, // エリア詳細
+                'content' => $request->content, // 内容(基本情報)
+                'contents' => $request->contents, // 内容(依頼詳細)
+                'google_map' => $request->google_map, //追加 googleマップのURL
+                'case_date' => now(), //依頼投稿時間
+                'state_id' => $request->state_id, // 進捗状況ID
+                'num_people' => 0, // 初期値を設定 現在参加人数
+            ]);
+
+            $case_Id = $case->case_id;
+
+            Sup::create([
+                'user_id' => $request->client_id,
+                'case_id' => $case_Id,
+                'sup_point' => $request->sup_point,
+            ]);
+
+
+            // $filePath = null;
+
+            // Content::create([
+            //     'case_id' => $case_Id,
+
+            // ]);
+
+            // トランザクションをコミット
+            DB::commit();
+
+        }
+        catch(\Exception $e)
+        {
+            // エラー発生時はトランザクションをロールバック(保存を取り消し)
+            DB::rollBack();
+            Log::error($e->getMessage());                   //エラーログを記録
+            return response()->json(['error' => 'Failed to save user'], 500);
+        }
+
+        // 処理が成功した場合のレスポンス
+        return response()->json(['message' => '依頼が正常に投稿されました'], 201);
+    }
+
+        // 依頼データの保存
+    //     $requestModel = Request::create([
+    //         'client_id' => $validated['client_id'],
+    //         'case_name' => $validated['case_name'],
+    //         'achieve' => $validated['achieve'],
+    //         'lower_limit' => $validated['lower_limit'],
+    //         'upper_limit' => $validated['upper_limit'],
+    //         'case_date' => $validated['case_date'],
+    //         'start_activty' => $validated['start_activty'],
+    //         'end_activty' => $validated['end_activty'],
+    //         'address_id' => $validated['address_id'],
+    //         'equipment' => $validated['equipment'],
+    //         'area_id' => $validated['area_id'],
+    //         'theme_id' => $validated['theme_id'],
+    //         'rec_age_id' => $validated['rec_age_id'],
+    //         'feature_id' => $validated['feature_id'],
+    //         'area_detail' => $validated['area_detail'],
+    //         'content' => $validated['content'],
+    //         'contents' => $validated['contents'],
+    //         'state_id' => $validated['state_id'],
+    //     ]);
+
+    //     // 画像のアップロード（任意）
+    //     // 画像がアップロードされた場合は、contentテーブルに保存
+    //     if ($request->hasFile('image1')) {
+    //         $image1 = $request->file('image1');
+    //         $path1 = $image1->store('public/images');
+    //         $requestModel->content()->create([
+    //             'picture_type' => 'image1',
+    //             'image_path' => $path1,
+    //         ]);
+    //     }
+
+    //     if ($request->hasFile('image2')) {
+    //         $image2 = $request->file('image2');
+    //         $path2 = $image2->store('public/images');
+    //         $requestModel->content()->create([
+    //             'picture_type' => 'image2',
+    //             'image_path' => $path2,
+    //         ]);
+    //     }
+
+    //     return response()->json(['message' => '依頼が正常に投稿されました'], 201);
+    // }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Prefectures;
 
 class Address extends Model
 {
@@ -21,8 +22,8 @@ class Address extends Model
         'post_code',
     ];
 
-    public function prefecture()
+    public function prefectures()
     {
-        return $this->belongsTo(Prefecture::class, 'pref_id', 'pref_id');
+        return $this->belongsTo(Prefectures::class,'pref_id');
     }
 }

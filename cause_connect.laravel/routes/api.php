@@ -40,3 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/images', [ImageUploadController::class, 'store']);
 Route::get('/images/{case_id}/{picture_type}', [ImageUploadController::class, 'show']);
 Route::post('/request', [Cause_ConnectController::class, 'stores']);
+Route::get('/activity-themes',[Activity_themeController::class,'index']);
+Route::get('features',[FeaturesController::class,'index']);
+Route::get('recommended-ages',[Recommended_ageController::class,'index']);
+//Route::get('',StateController::class,'index');
