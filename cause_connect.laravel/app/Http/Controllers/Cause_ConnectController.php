@@ -42,8 +42,7 @@ class Cause_ConnectController extends Controller
         //トランザクションを開始
         DB::beginTransaction();
 
-        try
-        {
+        try {
             // 住所情報を登録
             $address = Address::create([
                 'pref_id' => $request->pref_id,      //都道府県ID
@@ -59,8 +58,7 @@ class Cause_ConnectController extends Controller
             Log::info('Generated Address ID: ' . $addressId);
 
             //アドレスIDがnullか判別
-            if (is_null($addressId))
-            {
+            if (is_null($addressId)) {
                 Log::error('Address ID is null.');
             }
 
@@ -84,9 +82,7 @@ class Cause_ConnectController extends Controller
             // トランザクションをコミット
             DB::commit();
 
-        }
-        catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
             // エラー発生時はトランザクションをロールバック(保存を取り消し)
             DB::rollBack();
             Log::error($e->getMessage());                   //エラーログを記録
@@ -100,7 +96,7 @@ class Cause_ConnectController extends Controller
     // ログイン処理
     public function login(Request $request)
     {
-        try{
+        try {
             // バリデーション：メールアドレスとパスワードが必須
             // $request->validate([
             //     'email' => 'required|email', // メールアドレスが必須かつ有効な形式
@@ -114,12 +110,11 @@ class Cause_ConnectController extends Controller
                 'user_email' => $user->email,
                 'user_password' => $user->password,
                 '$request_email' => $request->email,
-                '$request_password' => $request ->password,
+                '$request_password' => $request->password,
             ]);
 
             // メールアドレスとパスワードが一致する場合
-            if ($request->email == $user->email && $request->password  == $user->password)
-            {
+            if ($request->email == $user->email && $request->password == $user->password) {
 
                 // トークンの生成(Sanctum を使用)
                 $token = $user->createToken('Personal Access Token')->plainTextToken;
@@ -128,7 +123,7 @@ class Cause_ConnectController extends Controller
                 return response()->json([
                     'message' => 'Login successful', // 成功メッセージ
                     'token' => $token,               // トークンを返す
-                    ]);
+                ]);
             }
 
             Log::warning('Login failed', [
@@ -139,9 +134,7 @@ class Cause_ConnectController extends Controller
             // ログイン失敗の場合 (認証エラー)
             return response()->json(['message' => 'Invalid credentials'], 401);
 
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             // エラーをログに記録
             Log::error('Login error', [
                 'error' => $e->getMessage(),
@@ -176,24 +169,26 @@ class Cause_ConnectController extends Controller
         // リクエストに紐づく認証済みユーザーを取得
         $authenticatedUser = $request->user();
 
-        Log::info('authenticatedUser: '. $authenticatedUser);
+        Log::info('authenticatedUser: ' . $authenticatedUser);
 
         // データベースのユーザー情報を再取得
         $user = User::with('address.prefectures') // addressとprefecture情報も一緒に取得
-        ->where('user_id', $authenticatedUser->user_id)
-        ->first();
+            ->where('user_id', $authenticatedUser->user_id)
+            ->first();
 
-        Log::info('user'. $user);
+        Log::info('user' . $user);
 
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
         }
+        
 
         // 照合後のユーザー情報を返す
         return response()->json($user);
     }
 
-    public function update(Request $request){
+    public function update(Request $request)
+    {
 
         $user = $request->user(); // 認証中のユーザーを取得
 
@@ -217,8 +212,8 @@ class Cause_ConnectController extends Controller
         //     return response()->json(['errors' => $validator->errors()], 422);
         // }
 
-        Log::info('Request Data:'. $user);
-        Log::info('Request Data:'. $user->address);
+        Log::info('Request Data:' . $user);
+        Log::info('Request Data:' . $user->address);
 
         // 住所データの更新
         if ($user->address) {
@@ -231,7 +226,15 @@ class Cause_ConnectController extends Controller
 
         // ユーザーデータの更新
         $user->fill($request->only([
-            'nickname', 'name', 'kana', 'birth', 'sex', 'tel', 'email', 'intro', 'icon'
+            'nickname',
+            'name',
+            'kana',
+            'birth',
+            'sex',
+            'tel',
+            'email',
+            'intro',
+            'icon'
         ]));
 
         $user->save();
@@ -279,8 +282,7 @@ class Cause_ConnectController extends Controller
         //トランザクションを開始
         DB::beginTransaction();
 
-        try
-        {
+        try {
             // 住所情報を登録
             $address = Address::create([
                 'pref_id' => $request->pref_id,      //都道府県ID
@@ -295,8 +297,7 @@ class Cause_ConnectController extends Controller
             Log::info('Generated Address ID: ' . $addressId);
 
             //アドレスIDがnullか判別
-            if (is_null($addressId))
-            {
+            if (is_null($addressId)) {
                 Log::error('Address ID is null.');
             }
 
@@ -345,9 +346,7 @@ class Cause_ConnectController extends Controller
             // トランザクションをコミット
             DB::commit();
 
-        }
-        catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
             // エラー発生時はトランザクションをロールバック(保存を取り消し)
             DB::rollBack();
             Log::error($e->getMessage());                   //エラーログを記録
@@ -358,7 +357,7 @@ class Cause_ConnectController extends Controller
         return response()->json(['message' => '依頼が正常に投稿されました'], 201);
     }
 
-        // 依頼データの保存
+    // 依頼データの保存
     //     $requestModel = Request::create([
     //         'client_id' => $validated['client_id'],
     //         'case_name' => $validated['case_name'],
