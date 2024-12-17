@@ -181,7 +181,14 @@ class Cause_ConnectController extends Controller
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
         }
-        
+        // アイコンのフルURLを生成
+        $user->icon = $user->icon
+            ? (str_starts_with($user->icon, '/storage/')
+                ? asset($user->icon)
+                : asset('storage/' . $user->icon))
+            : asset('storage/icons/default-avatar.png');
+        // レスポンス直前にログ出力
+        Log::info('Response User Data:', ['user' => $user]);
 
         // 照合後のユーザー情報を返す
         return response()->json($user);

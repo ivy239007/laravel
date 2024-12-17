@@ -44,8 +44,6 @@ Route::get('/activity-themes',[Activity_themeController::class,'index']);
 Route::get('features',[FeaturesController::class,'index']);
 Route::get('recommended-ages',[Recommended_ageController::class,'index']);
 //Route::get('',StateController::class,'index');
-//iconへ画像保存
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/user/icon', [UserController::class, 'updateIcon']);
-    Route::get('/user/me', [UserController::class, 'getUser']);
+    Route::post('/user/icon', [UserController::class, 'uploadIcon']);
 });

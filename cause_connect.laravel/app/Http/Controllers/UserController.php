@@ -1,49 +1,59 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
     /**
-     * アイコンのアップロード
+     * ユーザーアイコンのアップロード処理
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function updateIcon(Request $request)
+    public function uploadIcon(Request $request)
     {
-        $user = $request->user();
-
+        // **1. バリデーション**
+        // アップロードされたファイルが画像形式で、最大サイズ2MBであることを確認
         $request->validate([
-            'icon' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'icon' => 'required|image|mimes:jpg,png,jpeg|max:2048',
         ]);
 
-        if ($request->hasFile('icon')) {
-            $icon = $request->file('icon');
-            $binaryData = file_get_contents($icon->getRealPath());
+        try {
+            // **2. 現在のユーザー情報を取得**
+            $user = auth()->user();
 
-            $user->icon = $binaryData; // バイナリデータを保存
+            // **3. 古いアイコンファイルの削除**
+            // 以前のアイコンが存在する場合、ストレージから削除
+            if ($user->icon && Storage::disk('public')->exists($user->icon)) {
+                Storage::disk('public')->delete($user->icon);
+            }
+
+            // **4. 新しいアイコンファイルの保存**
+            // ファイルを保存し、パスを取得（例: icons/filename.jpg）
+            $filePath = $request->file('icon')->store('icons', 'public');
+
+            // **5. ユーザー情報の更新**
+            // 保存したファイルパスをユーザーの`icon`フィールドにセットして保存
+            $user->icon = $filePath;
             $user->save();
 
-            return response()->json(['message' => 'アイコンが更新されました'], 200);
+            // **6. 成功レスポンスの返却**
+            // 保存したパスをフルURL形式でフロントエンドに渡す
+            return response()->json([
+                'message' => 'アイコンがアップロードされました',
+                'icon' => $filePath, // 相対パスのみ返却
+            ], 200);
+        } catch (\Exception $e) {
+            // **7. エラーハンドリング**
+            // エラー発生時にメッセージをログに記録し、クライアントにエラーを返却
+            \Log::error('アイコンアップロード中にエラーが発生しました: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'アイコンのアップロード中にエラーが発生しました',
+            ], 500); // HTTPステータスコード500（サーバーエラー）
         }
-
-        return response()->json(['error' => '画像が選択されていません'], 400);
-    }
-
-    /**
-     * 認証ユーザーの情報を取得
-     */
-    public function getUser(Request $request)
-    {
-        $user = Auth::user();
-
-        if ($user->icon) {
-            // バイナリデータをBase64に変換して送信
-            $user->icon = 'data:image/jpeg;base64,' . base64_encode($user->icon);
-        }
-
-        return response()->json(['user' => $user]);
     }
 }
