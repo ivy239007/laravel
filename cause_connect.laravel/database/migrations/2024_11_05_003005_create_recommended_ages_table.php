@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('recommended_age', function (Blueprint $table) { //推奨年齢マスタ
-            $table->bigIncrements('rec_age_id'); // 主キー
-            $table->string('rec_age', 10); // 非NULL
+            $table->string('rec_age_id')->primary(); // 主キー
+            $table->string('rec_age', 10)->nullable(false); // 非NULL
         });
     }
 

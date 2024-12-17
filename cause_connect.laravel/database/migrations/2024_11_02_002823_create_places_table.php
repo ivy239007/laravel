@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('place', function (Blueprint $table) { //活動エリアマスタ
-            $table->bigIncrements('area_id'); // 主キー
-            $table->string('area', 10); // 非NULL
+            $table->string('area_id')->primary(); // 主キー
+            $table->string('area', 10)->nullable(false); // 非NULL
         });
     }
 

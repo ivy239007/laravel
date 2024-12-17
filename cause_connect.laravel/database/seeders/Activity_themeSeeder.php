@@ -14,7 +14,7 @@ class Activity_themeSeeder extends Seeder
     public function run(): void
     {
         $prefectures = [
-            ['theme_id' => 1, 'theme' => '地域美化'],
+            ['theme_id' => '1', 'theme' => '地域美化'],
         ];
 
         DB::table('activity_theme')->insert($prefectures);

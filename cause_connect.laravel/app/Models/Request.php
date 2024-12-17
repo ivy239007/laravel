@@ -9,6 +9,8 @@ class Request extends Model
 {
     use HasFactory;
 
+    protected $table = 'case'; // 使用するテーブル名を明示的に指定
+
     protected $fillable = [
         'client_id',
         'case_name',
@@ -27,7 +29,8 @@ class Request extends Model
         'area_detail',
         'content',
         'contents',
-        'state_id'
+        'state_id',
+        'num_people',
     ];
 
     public function address()
@@ -35,25 +38,25 @@ class Request extends Model
         return $this->belongsTo(Address::class);
     }
 
-    public function area()
-    {
-        return $this->belongsTo(ActivityArea::class, 'area_id');
-    }
+    // public function area()
+    // {
+    //     return $this->belongsTo(ActivityArea::class, 'area_id');
+    // }
 
-    public function theme()
-    {
-        return $this->belongsTo(ActivityTheme::class, 'theme_id');
-    }
+    // public function theme()
+    // {
+    //     return $this->belongsTo(ActivityTheme::class, 'theme_id');
+    // }
 
-    public function recommendedAge()
-    {
-        return $this->belongsTo(RecommendedAge::class, 'rec_age_id');
-    }
+    // public function recommendedAge()
+    // {
+    //     return $this->belongsTo(RecommendedAge::class, 'rec_age_id');
+    // }
 
-    public function feature()
-    {
-        return $this->belongsTo(Feature::class, 'feature_id');
-    }
+    // public function feature()
+    // {
+    //     return $this->belongsTo(Feature::class, 'feature_id');
+    // }
 
     public function content()
     {

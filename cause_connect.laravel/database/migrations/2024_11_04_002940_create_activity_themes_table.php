@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('activity_theme', function (Blueprint $table) { //活動テーママスタ
-            $table->bigIncrements('theme_id'); // 主キー
-            $table->string('theme', 20); // 非NULL
+            $table->string('theme_id')->primary(); // 主キー
+            $table->string('theme', 20)->nullable(false); // 非NULL
         });
     }
 

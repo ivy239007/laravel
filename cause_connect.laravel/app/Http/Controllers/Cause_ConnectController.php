@@ -300,8 +300,11 @@ class Cause_ConnectController extends Controller
                 Log::error('Address ID is null.');
             }
 
+
+            Log::info('Generated participation_id: ' . $request->participation_id);
+
             // 依頼情報を登録
-            $case = Request::create([
+            $case = RequestModel::create([
                 'client_id' => $request->client_id, //依頼者ID
                 'case_name' => $request->case_name, //依頼名
                 'lower_limit' => $request->lower_limit, //下限人数
@@ -309,7 +312,7 @@ class Cause_ConnectController extends Controller
                 'exec_date' => $request->exec_date, //活動日
                 'start_activty' => $request->start_activty, // 活動開始時間
                 'end_activty' => $request->end_activty, // 活動終了時間
-                'address_id' => $request->address_id, // 住所ID
+                'address_id' => $addressId, // 住所ID
                 'equipment' => $request->equipment, //　必要備品
                 'area_id' => $request->area_id, // 活動エリアID
                 'theme_id' => $request->theme_id, // 活動テーマID
@@ -323,17 +326,22 @@ class Cause_ConnectController extends Controller
                 'google_map' => $request->google_map, //追加 googleマップのURL
                 'case_date' => now(), //依頼投稿時間
                 'state_id' => $request->state_id, // 進捗状況ID
-                'num_people' => 0, // 初期値を設定 現在参加人数
+                'num_people' => $request->participation_id, // 初期値を設定 現在参加人数
             ]);
 
-            $case_Id = $case->case_id;
+            Log::info('Generated Case : ' . $case);
+
+
+            $case_Id = $case->id;
+
+            Log::info('Generated Case ID: ' . $case_Id);
+
 
             Sup::create([
                 'user_id' => $request->client_id,
                 'case_id' => $case_Id,
                 'sup_point' => $request->sup_point,
             ]);
-
 
             // $filePath = null;
 
@@ -357,49 +365,4 @@ class Cause_ConnectController extends Controller
         // 処理が成功した場合のレスポンス
         return response()->json(['message' => '依頼が正常に投稿されました'], 201);
     }
-
-        // 依頼データの保存
-    //     $requestModel = Request::create([
-    //         'client_id' => $validated['client_id'],
-    //         'case_name' => $validated['case_name'],
-    //         'achieve' => $validated['achieve'],
-    //         'lower_limit' => $validated['lower_limit'],
-    //         'upper_limit' => $validated['upper_limit'],
-    //         'case_date' => $validated['case_date'],
-    //         'start_activty' => $validated['start_activty'],
-    //         'end_activty' => $validated['end_activty'],
-    //         'address_id' => $validated['address_id'],
-    //         'equipment' => $validated['equipment'],
-    //         'area_id' => $validated['area_id'],
-    //         'theme_id' => $validated['theme_id'],
-    //         'rec_age_id' => $validated['rec_age_id'],
-    //         'feature_id' => $validated['feature_id'],
-    //         'area_detail' => $validated['area_detail'],
-    //         'content' => $validated['content'],
-    //         'contents' => $validated['contents'],
-    //         'state_id' => $validated['state_id'],
-    //     ]);
-
-    //     // 画像のアップロード（任意）
-    //     // 画像がアップロードされた場合は、contentテーブルに保存
-    //     if ($request->hasFile('image1')) {
-    //         $image1 = $request->file('image1');
-    //         $path1 = $image1->store('public/images');
-    //         $requestModel->content()->create([
-    //             'picture_type' => 'image1',
-    //             'image_path' => $path1,
-    //         ]);
-    //     }
-
-    //     if ($request->hasFile('image2')) {
-    //         $image2 = $request->file('image2');
-    //         $path2 = $image2->store('public/images');
-    //         $requestModel->content()->create([
-    //             'picture_type' => 'image2',
-    //             'image_path' => $path2,
-    //         ]);
-    //     }
-
-    //     return response()->json(['message' => '依頼が正常に投稿されました'], 201);
-    // }
 }

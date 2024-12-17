@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('feature', function (Blueprint $table) { //特徴マスタ
-            $table->bigIncrements('feature_id'); // 主キー
-            $table->string('feature', 20); // 非NULL
+            $table->string('feature_id', 20)->primary(); // 特徴ID (主キー)
+            $table->string('feature', 20)->nullable(false); // 特徴 (非NULL)
         });
     }
 
