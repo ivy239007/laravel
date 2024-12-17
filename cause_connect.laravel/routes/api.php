@@ -10,7 +10,7 @@ use App\Http\Controllers\Recommended_ageController;
 use App\Http\Controllers\StateController;
 use App\Http\Controllers\Activity_themeController;
 use App\Http\Controllers\ImageUploadController;
-
+use App\Http\Controllers\UserController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -44,3 +44,6 @@ Route::get('/activity-themes',[Activity_themeController::class,'index']);
 Route::get('features',[FeaturesController::class,'index']);
 Route::get('recommended-ages',[Recommended_ageController::class,'index']);
 //Route::get('',StateController::class,'index');
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/user/icon', [UserController::class, 'uploadIcon']);
+});
