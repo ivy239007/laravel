@@ -1,2 +1,47 @@
-*
-!.gitignore
+# 環境ファイル
+.env
+.env.*
+
+# Composerの依存ファイル
+/vendor/
+
+# Node.jsの依存ファイル
+/node_modules/
+
+# キャッシュやセッション関連
+/storage/*.key
+/storage/framework/*
+/storage/logs/*
+!/storage/framework/.gitignore
+!/storage/logs/.gitignore
+
+# アプリケーションキャッシュ
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+# IDE関連ファイル
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# オペレーティングシステム固有ファイル
+.DS_Store
+Thumbs.db
+
+# PHPUnitテスト結果
+/phpunit.result.cache
+
+# Laravel Mixの成果物
+/public/hot
+/public/storage
+/public/mix-manifest.json
+
+# その他ログやトレースファイル
+*.log
+*.tlog
+*.swp
+*.lock
+
+# Git関連
+.gitignore
