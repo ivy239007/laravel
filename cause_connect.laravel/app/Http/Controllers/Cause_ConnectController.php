@@ -43,6 +43,7 @@ class Cause_ConnectController extends Controller
         DB::beginTransaction();
 
         try {
+
             // 住所情報を登録
             $address = Address::create([
                 'pref_id' => $request->pref_id,      //都道府県ID
@@ -53,6 +54,9 @@ class Cause_ConnectController extends Controller
 
             //登録した住所IDを取得
             $addressId = $address->address_id;
+            // 画像の保存
+            $photo1Path = $request->hasFile('photo1') ? $request->file('photo1')->store('uploads', 'public') : null;
+            $photo2Path = $request->hasFile('photo2') ? $request->file('photo2')->store('uploads', 'public') : null;
 
             //ログに住所IDを取得
             Log::info('Generated Address ID: ' . $addressId);
@@ -77,10 +81,18 @@ class Cause_ConnectController extends Controller
                 'address_id' => $addressId,       //登録した住所ID
                 'intro' => $request->intro,       //自己紹介
                 'icon' => $filePath,              // 画像のパス（nullも可）
+                'photo1' => $photo1Path,
+                'photo2' => $photo2Path,
             ]);
 
             // トランザクションをコミット
             DB::commit();
+            // 処理が成功した場合のレスポンス
+            return response()->json([
+                'message' => '依頼が正常に投稿されました',
+                'photo1_path' => $photo1Path,
+                'photo2_path' => $photo2Path,
+            ], 201);
 
         } catch (\Exception $e) {
             // エラー発生時はトランザクションをロールバック(保存を取り消し)
@@ -89,8 +101,7 @@ class Cause_ConnectController extends Controller
             return response()->json(['error' => 'Failed to save user'], 500);
         }
 
-        // 処理が成功した場合のレスポンス
-        return response()->json(['message' => 'ユーザー登録が完了しました！'], 201);
+
     }
 
     // ログイン処理
@@ -290,6 +301,16 @@ class Cause_ConnectController extends Controller
         DB::beginTransaction();
 
         try {
+            // 画像保存処理
+            $photos = [];
+            foreach (['photo1', 'photo2'] as $index => $photoKey) {
+                if ($request->hasFile($photoKey)) {
+                    $photos[] = [
+                        'picture_type' => $index + 1, // 画像区分 (1: 基本情報, 2: 詳細情報など)
+                        'path' => $request->file($photoKey)->store('uploads', 'public'),
+                    ];
+                }
+            }
             // 住所情報を登録
             $address = Address::create([
                 'pref_id' => $request->pref_id,      //都道府県ID
@@ -309,7 +330,10 @@ class Cause_ConnectController extends Controller
             }
 
 
-            Log::info('Generated participation_id: ' . $request->participation_id);
+            Log::info('Saving to `case` Table:', [
+                'google_map' => $request->google_map,
+            ]);
+            
 
             // 依頼情報を登録
             $case = RequestModel::create([
@@ -336,9 +360,19 @@ class Cause_ConnectController extends Controller
                 'state_id' => $request->state_id, // 進捗状況ID
                 'num_people' => $request->participation_id, // 初期値を設定 現在参加人数
             ]);
+            // contentテーブルに画像を保存
+            foreach ($photos as $photo) {
+                DB::table('content')->insert([
+                    'case_id' => $case->id,
+                    'picture_type' => $photo['picture_type'],
+                    'picture' => $photo['path'],
+                ]);
+            }
+            Log::info('Saved Case:', $case->toArray());
 
             Log::info('Generated Case : ' . $case);
 
+            Log::info('Saving to `case` Table:', $request->all());
 
             $case_Id = $case->id;
 
@@ -369,6 +403,6 @@ class Cause_ConnectController extends Controller
         }
 
         // 処理が成功した場合のレスポンス
-        return response()->json(['message' => '依頼が正常に投稿されました'], 201);
+        return response()->json(['message' => '依頼が正常に投稿されました', 'uploaded_photos' => $photos,], 201);
     }
 }
