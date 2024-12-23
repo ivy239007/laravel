@@ -41,6 +41,7 @@ class Cause_ConnectController extends Controller
         DB::beginTransaction();
 
         try {
+
             // 住所情報を登録
             $address = Address::create([
                 'pref_id' => $request->pref_id,      //都道府県ID
@@ -51,6 +52,9 @@ class Cause_ConnectController extends Controller
 
             //登録した住所IDを取得
             $addressId = $address->address_id;
+            // 画像の保存
+            $photo1Path = $request->hasFile('photo1') ? $request->file('photo1')->store('uploads', 'public') : null;
+            $photo2Path = $request->hasFile('photo2') ? $request->file('photo2')->store('uploads', 'public') : null;
 
             //ログに住所IDを取得
             Log::info('Generated Address ID: ' . $addressId);
@@ -75,10 +79,18 @@ class Cause_ConnectController extends Controller
                 'address_id' => $addressId,       //登録した住所ID
                 'intro' => $request->intro,       //自己紹介
                 'icon' => $filePath,              // 画像のパス（nullも可）
+                'photo1' => $photo1Path,
+                'photo2' => $photo2Path,
             ]);
 
             // トランザクションをコミット
             DB::commit();
+            // 処理が成功した場合のレスポンス
+            return response()->json([
+                'message' => '依頼が正常に投稿されました',
+                'photo1_path' => $photo1Path,
+                'photo2_path' => $photo2Path,
+            ], 201);
 
         } catch (\Exception $e) {
             // エラー発生時はトランザクションをロールバック(保存を取り消し)
@@ -87,8 +99,7 @@ class Cause_ConnectController extends Controller
             return response()->json(['error' => 'Failed to save user'], 500);
         }
 
-        // 処理が成功した場合のレスポンス
-        return response()->json(['message' => 'ユーザー登録が完了しました！'], 201);
+
     }
 
     // ログイン処理

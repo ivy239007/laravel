@@ -42,10 +42,17 @@ Route::post('/images', [ImageUploadController::class, 'store']);
 Route::get('/images/{case_id}/{picture_type}', [ImageUploadController::class, 'show']);
 Route::post('/request', [Cause_Connect_CaseController::class, 'stores']);
 Route::get('/activity-themes',[Activity_themeController::class,'index']);
-Route::get('/features',[FeaturesController::class,'index']);
-Route::get('/recommended-ages',[Recommended_ageController::class,'index']);
-Route::middleware('/auth:sanctum')->group(function () {
-    Route::post('/user/icon', [UserController::class, 'uploadIcon']);
-});
 Route::get('/posts',[Cause_Connect_CaseController::class,'posts']);
 Route::get('/search-posts',[Cause_Connect_CaseController::class,'index']);
+Route::get('features',[FeaturesController::class,'index']);
+Route::get('recommended-ages',[Recommended_ageController::class,'index']);
+Route::middleware('auth:sanctum')->post('/content/upload', [ImageUploadController::class, 'upload']);
+//ユーザーアイコンアップロード
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/user/icon', [UserController::class, 'uploadIcon']);
+});
+// 依頼画像アップロード
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/images', [ImageUploadController::class, 'store']);
+    Route::get('/images/{case_id}/{picture_type}', [ImageUploadController::class, 'show']);
+});
