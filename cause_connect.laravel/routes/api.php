@@ -11,6 +11,7 @@ use App\Http\Controllers\StateController;
 use App\Http\Controllers\Activity_themeController;
 use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Cause_Connect_CaseController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -39,11 +40,12 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 Route::post('/images', [ImageUploadController::class, 'store']);
 Route::get('/images/{case_id}/{picture_type}', [ImageUploadController::class, 'show']);
-Route::post('/request', [Cause_ConnectController::class, 'stores']);
+Route::post('/request', [Cause_Connect_CaseController::class, 'stores']);
 Route::get('/activity-themes',[Activity_themeController::class,'index']);
-Route::get('features',[FeaturesController::class,'index']);
-Route::get('recommended-ages',[Recommended_ageController::class,'index']);
-//Route::get('',StateController::class,'index');
-Route::middleware('auth:sanctum')->group(function () {
+Route::get('/features',[FeaturesController::class,'index']);
+Route::get('/recommended-ages',[Recommended_ageController::class,'index']);
+Route::middleware('/auth:sanctum')->group(function () {
     Route::post('/user/icon', [UserController::class, 'uploadIcon']);
 });
+Route::get('/posts',[Cause_Connect_CaseController::class,'posts']);
+Route::get('/search-posts',[Cause_Connect_CaseController::class,'index']);

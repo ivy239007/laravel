@@ -62,4 +62,9 @@ class Request extends Model
     {
         return $this->hasMany(Content::class, 'case_id');
     }
+
+    public function sup()
+    {
+        return $this->hasMany(Sup::class,'case_id');
+    }
 }

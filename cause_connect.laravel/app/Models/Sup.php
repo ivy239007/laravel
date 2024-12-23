@@ -17,7 +17,6 @@ class Sup extends Model
         'user_id',
         'case_id',
         'sup_point',
-
     ];
 
 }
