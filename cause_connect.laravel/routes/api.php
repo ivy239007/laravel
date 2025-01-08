@@ -11,12 +11,8 @@ use App\Http\Controllers\StateController;
 use App\Http\Controllers\Activity_themeController;
 use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\UserController;
-<<<<<<< HEAD
 use App\Http\Controllers\PointController;
 
-=======
-use App\Http\Controllers\Cause_Connect_CaseController;
->>>>>>> 2061f872e707fca34af090e39eea74c6d7b0a297
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -61,11 +57,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/images', [ImageUploadController::class, 'store']);
     Route::get('/images/{case_id}/{picture_type}', [ImageUploadController::class, 'show']);
 });
-<<<<<<< HEAD
 //ポイント
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/points/history', [PointController::class, 'getHistory']);
     Route::post('/points/purchase', [PointController::class, 'purchasePoints']);
 });
-=======
->>>>>>> 2061f872e707fca34af090e39eea74c6d7b0a297
