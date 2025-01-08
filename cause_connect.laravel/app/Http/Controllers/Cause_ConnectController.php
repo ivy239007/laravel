@@ -59,7 +59,7 @@ class Cause_ConnectController extends Controller
             $photo2Path = $request->hasFile('photo2') ? $request->file('photo2')->store('uploads', 'public') : null;
 
             //ログに住所IDを取得
-            Log::info('Generated Address ID: ' . $addressId);
+            // Log::info('Generated Address ID: ' . $addressId);
 
             //アドレスIDがnullか判別
             if (is_null($addressId)) {
@@ -137,10 +137,10 @@ class Cause_ConnectController extends Controller
                 ]);
             }
 
-            Log::warning('Login failed', [
-                'email' => $request->email,
-                'time' => now(),
-            ]);
+            // Log::warning('Login failed', [
+            //     'email' => $request->email,
+            //     'time' => now(),
+            // ]);
 
             // ログイン失敗の場合 (認証エラー)
             return response()->json(['message' => 'Invalid credentials'], 401);
@@ -180,7 +180,7 @@ class Cause_ConnectController extends Controller
         // リクエストに紐づく認証済みユーザーを取得
         $authenticatedUser = $request->user();
 
-        Log::info('authenticatedUser: ' . $authenticatedUser);
+        // Log::info('authenticatedUser: ' . $authenticatedUser);
 
         // データベースのユーザー情報を再取得
         $user = User::with('address.prefectures') // addressとprefecture情報も一緒に取得
@@ -199,7 +199,7 @@ class Cause_ConnectController extends Controller
                 : asset('storage/' . $user->icon))
             : asset('storage/icons/default-avatar.png');
         // レスポンス直前にログ出力
-        Log::info('Response User Data:', ['user' => $user]);
+        // Log::info('Response User Data:', ['user' => $user]);
 
         // 照合後のユーザー情報を返す
         return response()->json($user);
@@ -322,7 +322,7 @@ class Cause_ConnectController extends Controller
             $addressId = $address->address_id;
 
             //ログに住所IDを取得
-            Log::info('Generated Address ID: ' . $addressId);
+            // Log::info('Generated Address ID: ' . $addressId);
 
             //アドレスIDがnullか判別
             if (is_null($addressId)) {
@@ -330,10 +330,7 @@ class Cause_ConnectController extends Controller
             }
 
 
-            Log::info('Saving to `case` Table:', [
-                'google_map' => $request->google_map,
-            ]);
-            
+            Log::info('Saving to `case` Table:', $request->all()); // 保存直前にリクエスト内容をログ
 
             // 依頼情報を登録
             $case = RequestModel::create([
@@ -368,15 +365,16 @@ class Cause_ConnectController extends Controller
                     'picture' => $photo['path'],
                 ]);
             }
+            
             Log::info('Saved Case:', $case->toArray());
+            Log::info('GoogleMap: ' . $request->google_map);
+            // Log::info('Generated Case : ' . $case);
 
-            Log::info('Generated Case : ' . $case);
-
-            Log::info('Saving to `case` Table:', $request->all());
+            // Log::info('Saving to `case` Table:', $request->all());
 
             $case_Id = $case->id;
 
-            Log::info('Generated Case ID: ' . $case_Id);
+            // Log::info('Generated Case ID: ' . $case_Id);
 
 
             Sup::create([

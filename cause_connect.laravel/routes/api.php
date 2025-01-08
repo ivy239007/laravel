@@ -11,6 +11,8 @@ use App\Http\Controllers\StateController;
 use App\Http\Controllers\Activity_themeController;
 use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PointController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -53,4 +55,9 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/images', [ImageUploadController::class, 'store']);
     Route::get('/images/{case_id}/{picture_type}', [ImageUploadController::class, 'show']);
+});
+//ポイント
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/points/history', [PointController::class, 'getHistory']);
+    Route::post('/points/purchase', [PointController::class, 'purchasePoints']);
 });
