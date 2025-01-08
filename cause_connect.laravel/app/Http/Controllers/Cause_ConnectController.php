@@ -5,8 +5,6 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Address;
 use App\Models\Prefectures;
-use App\Models\Request as RequestModel; // Requestモデルをインポート
-use App\Models\Sup;
 use App\Models\Content;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;  // DBクラスをインポート
@@ -269,6 +267,7 @@ class Cause_ConnectController extends Controller
 
         return response()->json(['message' => 'アカウントが削除されました。']);
     }
+<<<<<<< HEAD
 
     public function stores(Request $request)
     {
@@ -403,4 +402,13 @@ class Cause_ConnectController extends Controller
         // 処理が成功した場合のレスポンス
         return response()->json(['message' => '依頼が正常に投稿されました', 'uploaded_photos' => $photos,], 201);
     }
+=======
+>>>>>>> 2061f872e707fca34af090e39eea74c6d7b0a297
 }
+
+
+//     case_id: post.case_id,        // case_id を取得
+//     case_name: post.case_name,    // case_name を取得
+//     content: post.content,        // content を取得
+//     picture: post.picture,        // picture を取得
+//     sup_point: Number(post.sup_point),  // sup_point を数値に変換

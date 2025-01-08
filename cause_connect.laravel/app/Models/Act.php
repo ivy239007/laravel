@@ -9,6 +9,16 @@ class Act extends Model
 {
     use HasFactory;
 
+    protected $table = 'act'; // 使用するテーブル名
+
+    public $timestamps = false;
+
+
+    protected $fillable = [
+        'user_id',
+        'case_id',
+        'leader',
+    ];
 
 
     public function user()
