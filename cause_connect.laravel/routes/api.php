@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Cause_ConnectController;
+use App\Http\Controllers\Cause_Connect_CaseController;
+
 use App\Http\Controllers\PrefectureController;
 use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\FeaturesController;
@@ -12,7 +14,8 @@ use App\Http\Controllers\Activity_themeController;
 use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PointController;
-
+use App\Http\Controllers\RequestReportController;
+use App\Http\Controllers\ActController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -62,3 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/points/history', [PointController::class, 'getHistory']);
     Route::post('/points/purchase', [PointController::class, 'purchasePoints']);
 });
+Route::post('/request-report', [RequestReportController::class, 'store']);
+Route::get('/request-report/{case_id}', [RequestReportController::class, 'show']);
+// Route::post('/api/hokoku', [RequestReportController::class, 'store']);
+Route::post('/act', [ActController::class, 'store']);

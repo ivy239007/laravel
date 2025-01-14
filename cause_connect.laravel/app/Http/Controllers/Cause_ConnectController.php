@@ -267,7 +267,6 @@ class Cause_ConnectController extends Controller
 
         return response()->json(['message' => 'アカウントが削除されました。']);
     }
-<<<<<<< HEAD
 
     public function stores(Request $request)
     {
@@ -402,8 +401,6 @@ class Cause_ConnectController extends Controller
         // 処理が成功した場合のレスポンス
         return response()->json(['message' => '依頼が正常に投稿されました', 'uploaded_photos' => $photos,], 201);
     }
-=======
->>>>>>> 2061f872e707fca34af090e39eea74c6d7b0a297
 }
 
 
