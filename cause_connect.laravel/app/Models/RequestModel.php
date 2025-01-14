@@ -13,6 +13,6 @@ class RequestModel extends Model
         'client_id', 'case_name', 'achieve', 'lower_limit', 'upper_limit',
         'case_date', 'start_activty', 'end_activty', 'address_id', 'equipment',
         'area_id', 'theme_id', 'rec_age_id', 'feature_id', 'area_detail',
-        'content', 'contents', 'state_id','google_map',
+        'content', 'contents', 'state_id', 'google_map', // 必ず含める
     ];
-}
+    }

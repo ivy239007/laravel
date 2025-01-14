@@ -11,7 +11,7 @@ class Content extends Model
 
     protected $table = 'content'; //テーブル名を指定
 
-    protected $fillable = ['case_id', 'picture_type', 'image_path'];
+    protected $fillable = ['case_id', 'picture_type', 'picture'];
 
     public $timestamps = false; //タイムスタンプを無効化
 

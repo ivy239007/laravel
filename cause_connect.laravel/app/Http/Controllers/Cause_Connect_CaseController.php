@@ -6,22 +6,21 @@ use App\Models\Request as RequestModel; // Requestモデルをインポート
 use App\Models\Sup;
 use App\Models\Act;
 use App\Models\Address;
+use App\Models\Content; // 新たにContentモデルをインポート
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;  // DBクラスをインポート
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-
 class Cause_Connect_CaseController extends Controller
 {
     public function stores(Request $request)
     {
+
         Log::info('Generated  request: ' . $request);
-        \Log::info('Received exec_date:', ['exec_date' => $request->exec_date]);
 
         // バリデーション
-        $validated = $request->validate([
-        //     'exec_date' => 'required|date', // 日付形式であることを確認
+        // $validated = $request->validate([
         //     'client_id' => 'required|exists:users,id', // ユーザーIDが存在するか
         //     'case_name' => 'required|string|max:255',
         //     'achieve' => 'required|string|max:255',
@@ -40,32 +39,21 @@ class Cause_Connect_CaseController extends Controller
         //     'content' => 'nullable|string',
         //     'contents' => 'nullable|string',
         //     'state_id' => 'required|integer|exists:states,id', // 状態IDが存在するか
-        ]);
+        // ]);
 
-        //トランザクションを開始
+        // トランザクションを開始
         DB::beginTransaction();
 
         try {
             // 住所情報を登録
             $address = Address::create([
-                'pref_id' => $request->pref_id,      //都道府県ID
-                'address1' => $request->address1,    //住所1
-                'address2' => $request->address2,    //住所2
+                'pref_id' => $request->pref_id,
+                'address1' => $request->address1,
+                'address2' => $request->address2,
             ]);
 
-            //登録した住所IDを取得
             $addressId = $address->address_id;
-
-            //ログに住所IDを取得
             Log::info('Generated Address ID: ' . $addressId);
-
-            //アドレスIDがnullか判別
-            if (is_null($addressId)) {
-                Log::error('Address ID is null.');
-            }
-
-
-            Log::info('Generated participation_id: ' . $request->participation_id);
 
             // 依頼情報を登録
             $case = RequestModel::create([
@@ -73,7 +61,7 @@ class Cause_Connect_CaseController extends Controller
                 'case_name' => $request->case_name, //依頼名
                 'lower_limit' => $request->lower_limit, //下限人数
                 'upper_limit' => $request->upper_limit, //上限人数
-                'exec_date' => now(), // 依頼投稿日
+                'exec_date' => $request->exec_date, //活動日
                 'start_activty' => $request->start_activty, // 活動開始時間
                 'end_activty' => $request->end_activty, // 活動終了時間
                 'address_id' => $addressId, // 住所ID
@@ -88,46 +76,63 @@ class Cause_Connect_CaseController extends Controller
                 'content' => $request->content, // 内容(基本情報)
                 'contents' => $request->contents, // 内容(依頼詳細)
                 'google_map' => $request->google_map, //追加 googleマップのURL
-                'case_date' => $request->exec_date, //活動日
+                'case_date' => now(), //依頼投稿時間
                 'state_id' => $request->state_id, // 進捗状況ID
                 'num_people' => $request->participation_id, // 初期値を設定 現在参加人数
             ]);
 
-            Log::info('Generated Case : ' . $case);
+            $caseId = $case->id;
+            Log::info('Generated Case ID: ' . $caseId);
 
+            // 写真を保存
+            $uploadedPhotos = [];
 
-            $case_Id = $case->id;
+            if ($request->hasFile('photo1')) {
+                $path = $request->file('photo1')->store('uploads/photos', 'public');
+                $uploadedPhotos[] = [
+                    'case_id' => $caseId,
+                    'picture_type' => 1, // photo1 の場合は picture_type = 1
+                    'picture' => $path,
+                ];
+                Log::info('Saved photo1 at: ' . $path);
+            }
 
-            Log::info('Generated Case ID: ' . $case_Id);
+            if ($request->hasFile('photo2')) {
+                $path = $request->file('photo2')->store('uploads/photos', 'public');
+                $uploadedPhotos[] = [
+                    'case_id' => $caseId,
+                    'picture_type' => 2, // photo2 の場合は picture_type = 2
+                    'picture' => $path,
+                ];
+                Log::info('Saved photo2 at: ' . $path);
+            }
 
+            // 写真情報をcontentテーブルに保存
+            foreach ($uploadedPhotos as $photo) {
+                DB::table('content')->insert($photo);
+            }
 
+            // Sup情報を登録
             Sup::create([
                 'user_id' => $request->client_id,
-                'case_id' => $case_Id,
+                'case_id' => $caseId,
                 'sup_point' => $request->sup_point,
             ]);
 
-           if($request->participation_id == 1){
-            Act::create([
-                'user_id' => $request->client_id,
-                'case_id' => $case_Id,
-                'leader' => 1,
-            ]);
-
-           }
-
-            // $filePath = null;
-
-            // Content::create([
-            //     'case_id' => $case_Id,
-
-            // ]);
+            if ($request->participation_id == 1) {
+                Act::create([
+                    'user_id' => $request->client_id,
+                    'case_id' => $caseId,
+                    'leader' => 1,
+                ]);
+            }
 
             // トランザクションをコミット
             DB::commit();
 
+            return response()->json(['message' => '依頼が正常に投稿されました'], 201);
         } catch (\Exception $e) {
-            // エラー発生時はトランザクションをロールバック(保存を取り消し)
+            // トランザクションをロールバック
             DB::rollBack();
             Log::error($e->getMessage());                   //エラーログを記録
             return response()->json(['error' => 'Failed to save user'], 500);
@@ -160,27 +165,23 @@ class Cause_Connect_CaseController extends Controller
         $prefecture = $request->input('prefecture_id');
         $area = $request->input('area_id');
         $status = $request->input('status');
-        $status = intval($status);  // $status を整数に変換
         $day = now();
         // 検索ロジックの記述
         $query = RequestModel::query();
-        // 'address'テーブルのJOINを条件に応じてまとめて実行
-        $query->leftJoin('address', 'case.address_id', '=', 'address.address_id');
-        // エリアと募集状態による絞り込み
+        if ($prefecture) {
+            $query->join('address', 'case.address_id', '=', 'address.address_id') // JOIN
+            ->where('address.pref_id', $prefecture);
+        }
         if ($area) {
             $query->where('area_id', $area);
         }
+        // 募集状態の条件（$state）に応じたフィルタリング
         if ($status === 1) {
-            // 募集中（exedayが現在の日付より後）
-            $query->where('case_date', '>', $day);
+            // exeday が現在の日付より後のもの（募集中）
+            $query->where('exec_date', '>', $day);
         } elseif ($status === 2) {
-            // 終了（exedayが現在の日付以前）
-            $query->where('case_date', '<=', $day);
-        }
-        // 住所の絞り込み（prefecture）
-        // $prefectureが指定されている場合は絞り込みを追加
-        if ($prefecture) {
-            $query->where('address.pref_id', $prefecture);
+            // exeday が現在の日付以前のもの（終了）
+            $query->where('exec_date', '<=', $day);
         }
         $posts = $query->get();
         \Log::info('Fetched posts:'.$posts); // データをログに出力

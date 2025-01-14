@@ -31,6 +31,8 @@ class Request extends Model
         'contents',
         'state_id',
         'num_people',
+        'google_map',
+
     ];
 
     public function address()

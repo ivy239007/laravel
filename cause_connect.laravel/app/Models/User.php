@@ -14,6 +14,9 @@ class User extends Authenticatable
 
     protected $table = 'user'; // 使用するテーブル名
     protected $primaryKey = 'user_id'; // 主キー
+    public $incrementing = true;
+    protected $keyType = 'int';
+
 
     protected $fillable = [
         'password',
@@ -34,7 +37,7 @@ class User extends Authenticatable
     ];
 
     public function getIconAttribute($value)
-    { 
+    {
         return $value; // 値をそのまま返す
     }
 
