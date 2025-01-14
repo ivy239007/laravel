@@ -26,4 +26,9 @@ class Address extends Model
     {
         return $this->belongsTo(Prefectures::class,'pref_id');
     }
+
+    public function requests()
+    {
+        return $this->hasMany(RequestModel::class, 'address_id');
+    }
 }

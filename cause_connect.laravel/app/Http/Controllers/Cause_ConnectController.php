@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;  // DBクラスをインポート
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Hash;
 
 
 class Cause_ConnectController extends Controller
@@ -68,7 +69,8 @@ class Cause_ConnectController extends Controller
 
             // ユーザー情報を登録
             User::create([
-                'password' => $request->password, //パスワード
+                // 'password' => $request->password,
+                'password' => Hash::make($request->password), //パスワード
                 'nickname' => $request->nickname, //ニックネーム
                 'name' => $request->name,         //名前
                 'kana' => $request->kana,         //カナ表記
@@ -123,7 +125,7 @@ class Cause_ConnectController extends Controller
             ]);
 
             // メールアドレスとパスワードが一致する場合
-            if ($request->email == $user->email && $request->password == $user->password) {
+            if ($request->email == $user->email && Hash::check($request->password, $user->password)) {
 
                 // トークンの生成(Sanctum を使用)
                 $token = $user->createToken('Personal Access Token')->plainTextToken;
@@ -268,10 +270,3 @@ class Cause_ConnectController extends Controller
         return response()->json(['message' => 'アカウントが削除されました。']);
     }
 }
-
-
-//     case_id: post.case_id,        // case_id を取得
-//     case_name: post.case_name,    // case_name を取得
-//     content: post.content,        // content を取得
-//     picture: post.picture,        // picture を取得
-//     sup_point: Number(post.sup_point),  // sup_point を数値に変換

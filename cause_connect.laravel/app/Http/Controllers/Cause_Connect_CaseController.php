@@ -16,11 +16,12 @@ class Cause_Connect_CaseController extends Controller
 {
     public function stores(Request $request)
     {
-
         Log::info('Generated  request: ' . $request);
+        \Log::info('Received exec_date:', ['exec_date' => $request->exec_date]);
 
         // バリデーション
-        // $validated = $request->validate([
+        $validated = $request->validate([
+        //     'exec_date' => 'required|date', // 日付形式であることを確認
         //     'client_id' => 'required|exists:users,id', // ユーザーIDが存在するか
         //     'case_name' => 'required|string|max:255',
         //     'achieve' => 'required|string|max:255',
@@ -39,7 +40,7 @@ class Cause_Connect_CaseController extends Controller
         //     'content' => 'nullable|string',
         //     'contents' => 'nullable|string',
         //     'state_id' => 'required|integer|exists:states,id', // 状態IDが存在するか
-        // ]);
+        ]);
 
         //トランザクションを開始
         DB::beginTransaction();
@@ -72,7 +73,7 @@ class Cause_Connect_CaseController extends Controller
                 'case_name' => $request->case_name, //依頼名
                 'lower_limit' => $request->lower_limit, //下限人数
                 'upper_limit' => $request->upper_limit, //上限人数
-                'exec_date' => $request->exec_date, //活動日
+                'exec_date' => now(), // 依頼投稿日
                 'start_activty' => $request->start_activty, // 活動開始時間
                 'end_activty' => $request->end_activty, // 活動終了時間
                 'address_id' => $addressId, // 住所ID
@@ -87,7 +88,7 @@ class Cause_Connect_CaseController extends Controller
                 'content' => $request->content, // 内容(基本情報)
                 'contents' => $request->contents, // 内容(依頼詳細)
                 'google_map' => $request->google_map, //追加 googleマップのURL
-                'case_date' => now(), //依頼投稿時間
+                'case_date' => $request->exec_date, //活動日
                 'state_id' => $request->state_id, // 進捗状況ID
                 'num_people' => $request->participation_id, // 初期値を設定 現在参加人数
             ]);
@@ -159,26 +160,47 @@ class Cause_Connect_CaseController extends Controller
         $prefecture = $request->input('prefecture_id');
         $area = $request->input('area_id');
         $status = $request->input('status');
+        $status = intval($status);  // $status を整数に変換
         $day = now();
         // 検索ロジックの記述
         $query = RequestModel::query();
-        if ($prefecture) {
-            $query->join('address', 'case.address_id', '=', 'address.address_id') // JOIN
-            ->where('address.pref_id', $prefecture);
-        }
+        // 'address'テーブルのJOINを条件に応じてまとめて実行
+        $query->leftJoin('address', 'case.address_id', '=', 'address.address_id');
+        // エリアと募集状態による絞り込み
         if ($area) {
             $query->where('area_id', $area);
         }
-        // 募集状態の条件（$state）に応じたフィルタリング
         if ($status === 1) {
-            // exeday が現在の日付より後のもの（募集中）
-            $query->where('exec_date', '>', $day);
+            // 募集中（exedayが現在の日付より後）
+            $query->where('case_date', '>', $day);
         } elseif ($status === 2) {
-            // exeday が現在の日付以前のもの（終了）
-            $query->where('exec_date', '<=', $day);
+            // 終了（exedayが現在の日付以前）
+            $query->where('case_date', '<=', $day);
+        }
+        // 住所の絞り込み（prefecture）
+        // $prefectureが指定されている場合は絞り込みを追加
+        if ($prefecture) {
+            $query->where('address.pref_id', $prefecture);
         }
         $posts = $query->get();
         \Log::info('Fetched posts:'.$posts); // データをログに出力
         return response()->json($posts);
+    }
+    public function show(Request $request,$id)
+    {
+        \Log::info('Fetched qwertyuio:'.$request); // データをログに出力
+        try {
+            \Log::info('Fetched id:',['id' => $id]); // データをログに出力
+            $Ans = RequestModel::leftJoin('address', 'case.address_id', '=', 'address.address_id')
+            ->where('case_id', '=', $id)
+            ->get();
+            \Log::info('Fetched Ans:', ['data' => $Ans->toArray()]); // データをログに出力
+            $Ans = $Ans->toArray();
+            return response()->json($Ans); // JSONレスポンスを返す
+        } catch (\Exception $e) {
+            \Log::error('Error fetching feature:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Failed to fetch Ans'], 500);
+        }
+
     }
 }

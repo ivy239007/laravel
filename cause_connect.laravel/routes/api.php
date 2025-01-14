@@ -27,25 +27,25 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/prefectures', [PrefectureController::class, 'index']);
-Route::post('/users', [Cause_ConnectController::class, 'store']);
-Route::post('/login', [Cause_ConnectController::class, 'login']);
-Route::get('/user', [Cause_ConnectController::class, 'getUser'])->middleware('auth:sanctum');
-Route::post('/logout', [Cause_ConnectController::class, 'logout'])->middleware('auth:sanctum');
-Route::get('/user/me', [Cause_ConnectController::class, 'me'])->middleware('auth:sanctum');
-Route::get('/places', [PlaceController::class, 'index']);
+Route::get('/prefectures', [PrefectureController::class, 'index']); // 都道府県情報取得
+Route::post('/users', [Cause_ConnectController::class, 'store']); //　会員登録
+Route::post('/login', [Cause_ConnectController::class, 'login']); // ログイン
+Route::get('/user', [Cause_ConnectController::class, 'getUser'])->middleware('auth:sanctum'); //ログイン状態の保持
+Route::post('/logout', [Cause_ConnectController::class, 'logout'])->middleware('auth:sanctum'); // ログアウト
+Route::get('/user/me', [Cause_ConnectController::class, 'me'])->middleware('auth:sanctum'); // 会員情報取得
+Route::get('/places', [PlaceController::class, 'index']); // 活動エリア取得
 Route::middleware('auth:sanctum')->group(function () {
-    Route::put('/user/update', [Cause_ConnectController::class, 'update']);
-    Route::delete('/user/delete', [Cause_ConnectController::class, 'destroy']);
+    Route::put('/user/update', [Cause_ConnectController::class, 'update']); // 会員情報の更新
+    Route::delete('/user/delete', [Cause_ConnectController::class, 'destroy']); // 会員情報削除
 });
 Route::post('/images', [ImageUploadController::class, 'store']);
 Route::get('/images/{case_id}/{picture_type}', [ImageUploadController::class, 'show']);
-Route::post('/request', [Cause_Connect_CaseController::class, 'stores']);
-Route::get('/activity-themes',[Activity_themeController::class,'index']);
-Route::get('/posts',[Cause_Connect_CaseController::class,'posts']);
-Route::get('/search-posts',[Cause_Connect_CaseController::class,'index']);
-Route::get('features',[FeaturesController::class,'index']);
-Route::get('recommended-ages',[Recommended_ageController::class,'index']);
+Route::post('/request', [Cause_Connect_CaseController::class, 'stores']); // 依頼登録
+Route::get('/activity-themes',[Activity_themeController::class,'index']); // 活動テーマ取得
+Route::get('/posts',[Cause_Connect_CaseController::class,'posts']); // 登録された依頼情報の取得
+Route::get('/search-posts',[Cause_Connect_CaseController::class,'index']); // ナビバーから依頼検索に対応した依頼情報の取得
+Route::get('features',[FeaturesController::class,'index']); // 特徴取得
+Route::get('recommended-ages',[Recommended_ageController::class,'index']); // 推奨年齢取得
 Route::middleware('auth:sanctum')->post('/content/upload', [ImageUploadController::class, 'upload']);
 //ユーザーアイコンアップロード
 Route::middleware('auth:sanctum')->group(function () {
@@ -56,3 +56,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/images', [ImageUploadController::class, 'store']);
     Route::get('/images/{case_id}/{picture_type}', [ImageUploadController::class, 'show']);
 });
+Route::get('search-posts/{case_id}', [Cause_Connect_CaseController::class, 'show']);
