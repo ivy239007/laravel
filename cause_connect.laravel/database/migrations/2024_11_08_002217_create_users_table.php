@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('user', function (Blueprint $table) { //会員情報テーブル
             $table->bigIncrements('user_id'); // 主キー、AI
-            $table->string('password', 60);
+            $table->string('password', 20);
             $table->string('nickname', 20);
             $table->string('name', 10);
             $table->string('kana', 10);
