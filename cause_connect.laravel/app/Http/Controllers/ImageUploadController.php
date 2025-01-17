@@ -4,52 +4,79 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Content;
-use App\Models\Request_report; // モデルのインポート
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class ImageUploadController extends Controller
 {
+    /**
+     * 画像のアップロード
+     */
     public function store(Request $request)
     {
-        // 入力データのバリデーション
+        // バリデーション
         $validatedData = $request->validate([
-            'case_id' => 'required|integer|exists:case,case_id', // 存在する依頼IDか確認
-            'pictures.*.picture_type' => 'required|integer', // 複数画像の区分
-            'pictures.*.picture' => 'required|image|max:2048', // 各画像のバリデーション
-            'comment1' => 'nullable|string|max:200', // 参加者管理コメント
-            'comment2' => 'nullable|string|max:200', // 依頼場所コメント
-            'comment3' => 'nullable|string|max:200', // 実行前コメント
-            'comment4' => 'nullable|string|max:200', // 実行後コメント
+            'case_id' => 'required|integer|exists:case,case_id',
+            'pictures.*.picture_type' => 'required|integer',
+            'pictures.*.picture' => 'required|image|max:2048',  // 最大2MB
         ]);
 
-        // コメントデータの保存または更新
-        $requestReport = Request_report::updateOrCreate(
-            ['case_id' => $validatedData['case_id']], // 検索条件
-            [
-                'comment1' => $validatedData['comment1'] ?? null,
-                'comment2' => $validatedData['comment2'] ?? null,
-                'comment3' => $validatedData['comment3'] ?? null,
-                'comment4' => $validatedData['comment4'] ?? null,
-            ]
-        );
+        // 画像の保存処理
+        if ($request->hasFile('pictures')) {
+            foreach ($request->file('pictures') as $picture) {
+                $type = $picture['picture_type'];
 
-        // 画像データの保存処理
-        if ($request->has('pictures')) {
-            foreach ($request->pictures as $picture) {
-                // 画像の保存
-                $imageContent = file_get_contents($picture['picture']->getRealPath());
+                // 画像を保存（public/storage/uploads/photos）
+                $path = $picture['picture']->store('uploads/photos', 'public');
 
-                Content::create([
+                // データベースに保存
+                Content::updateOrCreate(
+                    ['case_id' => $validatedData['case_id'], 'picture_type' => $type],
+                    ['picture' => $path]
+                );
+
+                Log::info('画像を保存しました:', [
                     'case_id' => $validatedData['case_id'],
-                    'picture_type' => $picture['picture_type'],
-                    'picture' => $imageContent,
+                    'picture_type' => $type,
+                    'path' => $path,
                 ]);
             }
         }
 
-        // レスポンスを返す
-        return response()->json([
-            'message' => 'データを正常に保存または更新しました',
-            'request_report' => $requestReport,
-        ], 201);
+        return response()->json(['message' => '画像が正常に保存されました'], 201);
+    }
+
+    /**
+     * 画像の取得
+     */
+    public function show($case_id, $picture_type)
+    {
+        Log::info('画像取得開始:', [
+            'case_id' => $case_id,
+            'picture_type' => $picture_type
+        ]);
+
+        try {
+            // データベースから画像パスを取得
+            $image = Content::where('case_id', $case_id)
+                            ->where('picture_type', $picture_type)
+                            ->first();
+
+            if (!$image) {
+                return response()->json(['message' => '画像が見つかりません'], 404);
+            }
+
+            // 画像URLを生成して返却
+            $imagePath = asset('storage/' . $image->picture);
+
+            return response()->json(['picture' => $imagePath], 200);
+        } catch (\Exception $e) {
+            Log::error('画像取得エラー:', [
+                'case_id' => $case_id,
+                'picture_type' => $picture_type,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json(['message' => '画像の取得に失敗しました'], 500);
+        }
     }
 }

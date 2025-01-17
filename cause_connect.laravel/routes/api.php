@@ -1,10 +1,10 @@
 <?php
-
+ 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Cause_ConnectController;
 use App\Http\Controllers\Cause_Connect_CaseController;
-
+ 
 use App\Http\Controllers\PrefectureController;
 use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\FeaturesController;
@@ -16,6 +16,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\RequestReportController;
 use App\Http\Controllers\ActController;
+use App\Http\Controllers\SupController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -26,11 +28,11 @@ use App\Http\Controllers\ActController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
+ 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
+ 
 Route::get('/prefectures', [PrefectureController::class, 'index']); // 都道府県情報取得
 Route::post('/users', [Cause_ConnectController::class, 'store']); //　会員登録
 Route::post('/login', [Cause_ConnectController::class, 'login']); // ログイン
@@ -55,11 +57,11 @@ Route::middleware('auth:sanctum')->post('/content/upload', [ImageUploadControlle
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/icon', [UserController::class, 'uploadIcon']);
 });
-// 依頼画像アップロード
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/images', [ImageUploadController::class, 'store']);
-    Route::get('/images/{case_id}/{picture_type}', [ImageUploadController::class, 'show']);
-});
+// 画像アップロード
+Route::post('/images/upload', [ImageUploadController::class, 'store']);
+
+// 画像取得
+Route::get('/images/{case_id}/{picture_type}', [ImageUploadController::class, 'show']);
 //ポイント
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/points/history', [PointController::class, 'getHistory']);
@@ -68,4 +70,6 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/request-report', [RequestReportController::class, 'store']);
 Route::get('/request-report/{case_id}', [RequestReportController::class, 'show']);
 // Route::post('/api/hokoku', [RequestReportController::class, 'store']);
-Route::post('/act', [ActController::class, 'store']);Route::get('search-posts/{case_id}', [Cause_Connect_CaseController::class, 'show']);
+Route::post('/act', [ActController::class, 'join']);Route::get('search-posts/{case_id}', [Cause_Connect_CaseController::class, 'show']);
+// ✅ 出資登録API（supテーブルへの登録・更新）
+Route::post('/sup/update-or-create', [SupController::class, 'updateOrCreate']);
