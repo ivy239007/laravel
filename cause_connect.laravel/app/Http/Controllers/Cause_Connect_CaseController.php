@@ -162,7 +162,7 @@ class Cause_Connect_CaseController extends Controller
     {
         \Log::info('Fetched request:'.$request); // データをログに出力
         // 検索条件を取得
-        $prefecture = $request->input('prefecture_id');
+        $prefecture = $request->input('pref_id');
         $area = $request->input('area_id');
         $status = $request->input('status');
         $day = now();

@@ -365,7 +365,7 @@ class Cause_ConnectController extends Controller
                     'picture' => $photo['path'],
                 ]);
             }
-            
+
             Log::info('Saved Case:', $case->toArray());
             Log::info('GoogleMap: ' . $request->google_map);
             // Log::info('Generated Case : ' . $case);
