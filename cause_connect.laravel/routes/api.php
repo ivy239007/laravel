@@ -1,10 +1,10 @@
 <?php
- 
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Cause_ConnectController;
 use App\Http\Controllers\Cause_Connect_CaseController;
- 
+
 use App\Http\Controllers\PrefectureController;
 use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\FeaturesController;
@@ -28,11 +28,11 @@ use App\Http\Controllers\SupController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
- 
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
- 
+
 Route::get('/prefectures', [PrefectureController::class, 'index']); // 都道府県情報取得
 Route::post('/users', [Cause_ConnectController::class, 'store']); //　会員登録
 Route::post('/login', [Cause_ConnectController::class, 'login']); // ログイン
