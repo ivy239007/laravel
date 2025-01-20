@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -7,8 +8,8 @@ use Illuminate\Support\Facades\Log;
 
 class SupController extends Controller
 {
-    // ✅ 出資登録のみ（更新なし）
-    public function store(Request $request)
+    // ✅ 出資登録または更新
+    public function updateOrCreate(Request $request)
     {
         // バリデーション
         $validated = $request->validate([
@@ -20,32 +21,29 @@ class SupController extends Controller
         try {
             Log::info('出資リクエスト受信', $validated);
 
-            // ✅ 同じuser_idとcase_idが存在するか確認
-            $exists = Sup::where('user_id', $validated['user_id'])
-                         ->where('case_id', $validated['case_id'])
-                         ->exists();
+            // ✅ `updateOrCreate` を使ってデータを登録または更新
+            $sup = Sup::updateOrCreate(
+                [
+                    'user_id' => $validated['user_id'], // 条件
+                    'case_id' => $validated['case_id'], // 条件
+                ],
+                [
+                    'sup_point' => $validated['sup_point'], // 更新内容
+                ]
+            );
 
-            if ($exists) {
-                // ✅ 重複エラーを返す
-                return response()->json([
-                    'message' => 'すでにこの依頼に出資しています。'
-                ], 409);
-            }
-
-            // ✅ 重複がなければ新規登録
-            Sup::create($validated);
-
-            Log::info('新規出資を登録しました', $validated);
+            Log::info('出資データを登録または更新しました', $sup->toArray());
 
             return response()->json([
-                'message' => '出資が完了しました！'
+                'message' => '出資登録が完了しました！',
+                'data' => $sup,
             ], 201);
 
         } catch (\Exception $e) {
             Log::error('出資登録に失敗', ['error' => $e->getMessage()]);
 
             return response()->json([
-                'message' => '出資登録に失敗しました。'
+                'message' => '出資登録に失敗しました。',
             ], 500);
         }
     }
