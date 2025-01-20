@@ -145,12 +145,25 @@ class Cause_Connect_CaseController extends Controller
     public function posts()
     {
         try {
-            $Ans = RequestModel::join('sup', 'case.case_id', '=', 'sup.case_id') // 全データを取得
-                ->select('case.case_id', 'case.case_name', 'case.content', 'sup.sup_point')
-                ->get();
-            \Log::info('Fetched Ans:', ['data' => $Ans->toArray()]); // データをログに出力
+            $Ans = RequestModel::join('sup', 'case.case_id', '=', 'sup.case_id') // `sup` テーブルを結合
+            ->leftJoin('content', 'case.case_id', '=', 'content.case_id') // `content` テーブルを結合
+            ->select('case.case_id','case.case_name','case.content','sup.sup_point','content.picture', // 画像を取得
+            'content.picture_type' // 必要なら画像区分も取得
+            )
+            ->where(function ($query) {
+                $query->where('content.picture_type', 1) // picture_type が 1
+                      ->orWhereNull('content.picture_type'); // または NULL
+                    })
+            ->get();
+            Log::info('Fetched Ans:', ['data' => $Ans->toArray()]); // データをログに出力
             $Ans = $Ans->toArray();
             return response()->json($Ans); // JSONレスポンスを返す
+            // $Ans = RequestModel::join('sup', 'case.case_id', '=', 'sup.case_id') // 全データを取得
+            // ->select('case.case_id', 'case.case_name','case.content','sup.sup_point')
+            // ->get();
+            // \Log::info('Fetched Ans:', ['data' => $Ans->toArray()]); // データをログに出力
+            // $Ans = $Ans->toArray();
+            // return response()->json($Ans); // JSONレスポンスを返す
         } catch (\Exception $e) {
             \Log::error('Error fetching feature:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Failed to fetch Ans'], 500);
