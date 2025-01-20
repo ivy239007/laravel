@@ -146,8 +146,8 @@ class Cause_Connect_CaseController extends Controller
     {
         try {
             $Ans = RequestModel::join('sup', 'case.case_id', '=', 'sup.case_id') // 全データを取得
-            ->select('case.case_id', 'case.case_name','case.content','sup.sup_point')
-            ->get();
+                ->select('case.case_id', 'case.case_name', 'case.content', 'sup.sup_point')
+                ->get();
             \Log::info('Fetched Ans:', ['data' => $Ans->toArray()]); // データをログに出力
             $Ans = $Ans->toArray();
             return response()->json($Ans); // JSONレスポンスを返す
@@ -160,7 +160,7 @@ class Cause_Connect_CaseController extends Controller
 
     public function index(Request $request)
     {
-        \Log::info('Fetched request:'.$request); // データをログに出力
+        \Log::info('Fetched request:' . $request); // データをログに出力
         // 検索条件を取得
         $prefecture = $request->input('pref_id');
         $area = $request->input('area_id');
@@ -170,7 +170,7 @@ class Cause_Connect_CaseController extends Controller
         $query = RequestModel::query();
         if ($prefecture) {
             $query->join('address', 'case.address_id', '=', 'address.address_id') // JOIN
-            ->where('address.pref_id', $prefecture);
+                ->where('address.pref_id', $prefecture);
         }
         if ($area) {
             $query->where('area_id', $area);
@@ -184,17 +184,17 @@ class Cause_Connect_CaseController extends Controller
             $query->where('exec_date', '<=', $day);
         }
         $posts = $query->get();
-        \Log::info('Fetched posts:'.$posts); // データをログに出力
+        \Log::info('Fetched posts:' . $posts); // データをログに出力
         return response()->json($posts);
     }
-    public function show(Request $request,$id)
+    public function show(Request $request, $id)
     {
-        \Log::info('Fetched qwertyuio:'.$request); // データをログに出力
+        \Log::info('Fetched qwertyuio:' . $request); // データをログに出力
         try {
-            \Log::info('Fetched id:',['id' => $id]); // データをログに出力
+            \Log::info('Fetched id:', ['id' => $id]); // データをログに出力
             $Ans = RequestModel::leftJoin('address', 'case.address_id', '=', 'address.address_id')
-            ->where('case_id', '=', $id)
-            ->get();
+                ->where('case_id', '=', $id)
+                ->get();
             \Log::info('Fetched Ans:', ['data' => $Ans->toArray()]); // データをログに出力
             $Ans = $Ans->toArray();
             return response()->json($Ans); // JSONレスポンスを返す
@@ -204,4 +204,33 @@ class Cause_Connect_CaseController extends Controller
         }
 
     }
+    //進行度
+    public function updateState(Request $request, $case_id)
+    {
+        try {
+            // ✅ バリデーション
+            $request->validate([
+                'state_id' => 'required|integer'
+            ]);
+
+            // ✅ 直接SQLで更新
+            $updated = DB::table('case')
+                ->where('case_id', $case_id)
+                ->update([
+                    'state_id' => $request->input('state_id'),
+                    'updated_at' => now()
+                ]);
+
+            if ($updated) {
+                \Log::info("Case ID {$case_id} の state_id を更新しました。");
+                return response()->json(['message' => '進捗状況が更新されました。'], 200);
+            } else {
+                return response()->json(['message' => '依頼が見つかりません。'], 404);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error updating state_id:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => '進捗状況の更新に失敗しました。'], 500);
+        }
+    }
+
 }

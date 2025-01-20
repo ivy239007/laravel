@@ -22,9 +22,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         DB::listen(function ($query) {
-            Log::info("SQL: " . $query->sql); //$query->sql: 実行されたSQL文。
-            Log::info("Bindings: " . json_encode($query->bindings)); //$query->bindings: プレースホルダーのバインド値。
-            Log::info("Time: " . $query->time . "ms"); //$query->time: 実行時間。
+            Log::info("SQL: " . $query->sql);
+            Log::info("Bindings: " . json_encode($query->bindings));
+            Log::info("Time: " . $query->time . "ms");
         });
     }
+    
 }
