@@ -17,7 +17,6 @@ class User extends Authenticatable
     public $incrementing = true;
     protected $keyType = 'int';
 
-
     protected $fillable = [
         'password',
         'nickname',
@@ -36,13 +35,31 @@ class User extends Authenticatable
         'password', // パスワードを隠す
     ];
 
+    // ✅ アイコンの取得
     public function getIconAttribute($value)
     {
-        return $value; // 値をそのまま返す
+        return $value;
     }
 
+    // ✅ 住所のリレーション
     public function address()
     {
         return $this->belongsTo(Address::class, 'address_id', 'address_id');
+    }
+
+    // ✅ 出資している依頼（supテーブル）
+    public function contributedCases()
+    {
+        return $this->belongsToMany(CaseModel::class, 'sup', 'user_id', 'case_id')
+                    ->withPivot('sup_point')
+                    ->withTimestamps();
+    }
+
+    // ✅ 実行している依頼（actテーブル）
+    public function executedCases()
+    {
+        return $this->belongsToMany(CaseModel::class, 'act', 'user_id', 'case_id')
+                    ->withPivot('leader')
+                    ->withTimestamps();
     }
 }
