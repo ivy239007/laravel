@@ -99,7 +99,8 @@ Route::get('/request-report/{case_id}', [RequestReportController::class, 'show']
 Route::post('/sup/update-or-create', [SupController::class, 'updateOrCreate']);
 Route::post('/act', [ActController::class, 'join']);
 Route::get('/cases/{case_id}/executors', [ActController::class, 'getExecutorIds']);
-
+// ✅ 出資ポイント関連
+Route::get('/cases/{case_id}/total-points', [SupController::class, 'getTotalPoints']); // トータルポイント取得
 // ✅ 参加者情報取得
 Route::prefix('cases')->group(function () {
     Route::get('/{case_id}/requester', [ParticipantsController::class, 'getRequester']);

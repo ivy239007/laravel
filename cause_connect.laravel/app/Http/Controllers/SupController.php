@@ -13,8 +13,8 @@ class SupController extends Controller
     {
         // バリデーション
         $validated = $request->validate([
-            'user_id'   => 'required|integer',
-            'case_id'   => 'required|integer',
+            'user_id' => 'required|integer',
+            'case_id' => 'required|integer',
             'sup_point' => 'required|integer|min:100',
         ]);
 
@@ -47,4 +47,37 @@ class SupController extends Controller
             ], 500);
         }
     }
+    /**
+     * 指定されたcase_idのトータルポイントを取得
+     */
+    public function getTotalPoints($caseId)
+    {
+        // case_idがオブジェクト形式の場合のデコード処理
+        if (is_string($caseId)) {
+            $decoded = json_decode($caseId, true);
+            $caseId = $decoded['case_id'] ?? $caseId; // JSONからcase_idを取得
+        }
+    
+        Log::info("修正後のcase_id:", ['case_id' => $caseId]);
+    
+        try {
+            // トータルポイント計算
+            $totalPoints = Sup::where('case_id', $caseId)->sum('sup_point');
+    
+            Log::info("計算されたトータルポイント:", ['total_points' => $totalPoints]);
+    
+            return response()->json([
+                'success' => true,
+                'total_points' => $totalPoints,
+            ]);
+        } catch (\Exception $e) {
+            Log::error("トータルポイント取得エラー", ['error_message' => $e->getMessage()]);
+    
+            return response()->json([
+                'success' => false,
+                'message' => 'トータルポイントの取得に失敗しました。',
+            ], 500);
+        }
+    }
+            
 }
