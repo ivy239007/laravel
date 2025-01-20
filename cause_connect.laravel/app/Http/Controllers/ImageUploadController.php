@@ -55,7 +55,12 @@ class ImageUploadController extends Controller
             'case_id' => $case_id,
             'picture_type' => $picture_type
         ]);
-
+        if (is_null($picture_type)) {
+        Log::warning('画像取得スキップ: picture_typeがnullです', [
+            'case_id' => $case_id,
+        ]);
+        return response()->json(['message' => '画像タイプが指定されていません'], Response::HTTP_BAD_REQUEST);
+    }
         try {
             // データベースから画像パスを取得
             $image = Content::where('case_id', $case_id)

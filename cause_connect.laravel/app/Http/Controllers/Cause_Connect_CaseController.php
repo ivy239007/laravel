@@ -86,6 +86,7 @@ class Cause_Connect_CaseController extends Controller
 
             // 写真を保存
             $uploadedPhotos = [];
+            $defaultPhotoPath = 'uploads\photos\7ULEfmvZseIwxVaR8QiWjgpgD0lxlQ47vYteDSs1.jpg'; // デフォルト画像のパス
 
             if ($request->hasFile('photo1')) {
                 $path = $request->file('photo1')->store('uploads/photos', 'public');
@@ -95,6 +96,14 @@ class Cause_Connect_CaseController extends Controller
                     'picture' => $path,
                 ];
                 Log::info('Saved photo1 at: ' . $path);
+            } else {
+                // デフォルト画像を登録
+                $uploadedPhotos[] = [
+                    'case_id' => $caseId,
+                    'picture_type' => 1, // photo1 の場合は picture_type = 1
+                    'picture' => $defaultPhotoPath,
+                ];
+                Log::info('No photo1 uploaded, using default photo: ' . $defaultPhotoPath);
             }
 
             if ($request->hasFile('photo2')) {
@@ -105,6 +114,14 @@ class Cause_Connect_CaseController extends Controller
                     'picture' => $path,
                 ];
                 Log::info('Saved photo2 at: ' . $path);
+            } else {
+                // デフォルト画像を登録
+                $uploadedPhotos[] = [
+                    'case_id' => $caseId,
+                    'picture_type' => 2, // photo2 の場合は picture_type = 2
+                    'picture' => $defaultPhotoPath,
+                ];
+                Log::info('No photo1 uploaded, using default photo: ' . $defaultPhotoPath);
             }
 
             // 写真情報をcontentテーブルに保存
