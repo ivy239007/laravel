@@ -186,8 +186,6 @@ class Cause_Connect_CaseController extends Controller
             return response()->json(['error' => 'Failed to fetch Ans'], 500);
         }
     }
-
-
     public function index(Request $request)
     {
         \Log::info('Fetched request:' . $request); // データをログに出力
@@ -201,6 +199,8 @@ class Cause_Connect_CaseController extends Controller
         if ($prefecture) {
             $query->join('address', 'case.address_id', '=', 'address.address_id') // JOIN
                 ->where('address.pref_id', $prefecture);
+        }else{
+            $query->join('address', 'case.address_id', '=', 'address.address_id'); // JOIN
         }
         if ($area) {
             $query->where('area_id', $area);
@@ -214,9 +214,37 @@ class Cause_Connect_CaseController extends Controller
             $query->where('exec_date', '<=', $day);
         }
         $posts = $query->get();
-        \Log::info('Fetched posts:' . $posts); // データをログに出力
-        return response()->json($posts);
-    }
+        // 画像データを各レコードに追加
+        foreach ($posts as $post) {
+            $caseId = $post->case_id; // 各レコードの case_id を取得
+            \Log::info('画像取得開始:', [
+                'case_id' => $caseId,
+                'picture_type' => 1, // 必要に応じて他のタイプを設定可能
+                ]);
+                try {
+                    // 画像を取得
+                    $image = Content::where('case_id', $caseId)
+                    ->where('picture_type', 1) // 画像タイプを指定
+                    ->first();
+                    if ($image) {
+                        // URLを生成してレコードに追加
+                        $post->picture = asset('storage/' . $image->picture);
+                    } else {
+                        \Log::warning('画像が見つかりません:', ['case_id' => $caseId]);
+                        $post->picture = null; // デフォルト画像を設定可能
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('画像取得エラー:', [
+                        'case_id' => $caseId,
+                        'error' => $e->getMessage()
+                    ]);
+                    $post->picture = null; // エラー時は null を設定
+                }
+            }
+            // 最終結果をログに出力
+            \Log::info('Fetched posts:', ['posts' => $posts->toArray()]);
+            return response()->json($posts);
+        }
     public function show(Request $request, $id)
     {
         \Log::info('Fetched qwertyuio:' . $request); // データをログに出力
