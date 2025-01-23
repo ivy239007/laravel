@@ -17,7 +17,8 @@ use App\Http\Controllers\{
     RequestReportController,
     ActController,
     SupController,
-    ParticipantsController
+    ParticipantsController,
+    FavoriteController
 };
 
 /*
@@ -107,3 +108,5 @@ Route::prefix('cases')->group(function () {
     Route::get('/{case_id}/contributors', [ParticipantsController::class, 'getContributors']);
     Route::get('/{case_id}/executors', [ParticipantsController::class, 'getExecutors']);
 });
+Route::post('/favorites', [FavoriteController::class, 'store']);
+Route::post('/favopopup', [FavoriteController::class, 'index']);

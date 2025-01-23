@@ -62,4 +62,9 @@ class User extends Authenticatable
                     ->withPivot('leader')
                     ->withTimestamps();
     }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class, 'user_id', 'user_id');
+    }
 }
