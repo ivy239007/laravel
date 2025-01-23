@@ -85,6 +85,7 @@ Route::get('/posts', [Cause_Connect_CaseController::class, 'posts']);
 Route::get('/search-posts', [Cause_Connect_CaseController::class, 'index']);
 Route::get('/search-posts/{case_id}', [Cause_Connect_CaseController::class, 'show']);
 Route::put('/case/{case_id}/update-state', [Cause_Connect_CaseController::class, 'updateState']);
+Route::delete('/case/{case_id}', [Cause_Connect_CaseController::class, 'deleteCase'])->middleware('auth:sanctum');
 
 // ✅ 画像関連
 Route::post('/images/upload', [ImageUploadController::class, 'store']);
