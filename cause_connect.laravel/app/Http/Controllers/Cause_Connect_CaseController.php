@@ -290,5 +290,23 @@ class Cause_Connect_CaseController extends Controller
             return response()->json(['error' => '進捗状況の更新に失敗しました。'], 500);
         }
     }
-
+    public function deleteCase($case_id)
+    {
+        try {
+            // 依頼を削除する
+            $deleted = DB::table('case')->where('case_id', $case_id)->delete();
+    
+            if ($deleted) {
+                \Log::info("Case ID {$case_id} が正常に削除されました。");
+                return response()->json(['message' => '依頼が削除されました。'], 200);
+            } else {
+                \Log::warning("Case ID {$case_id} が見つかりません。");
+                return response()->json(['message' => '依頼が見つかりません。'], 404);
+            }
+        } catch (\Exception $e) {
+            \Log::error('依頼削除中にエラーが発生しました:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => '依頼の削除に失敗しました。'], 500);
+        }
+    }
+    
 }
