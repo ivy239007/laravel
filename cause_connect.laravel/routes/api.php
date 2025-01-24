@@ -111,3 +111,4 @@ Route::prefix('cases')->group(function () {
 });
 Route::post('/favorites', [FavoriteController::class, 'store']);
 Route::post('/favopopup', [FavoriteController::class, 'index']);
+Route::post('/favorites/check', [FavoriteController::class, 'checkFavorite']);
