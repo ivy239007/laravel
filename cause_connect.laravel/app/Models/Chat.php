@@ -2,10 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Chat extends Model
 {
-    use HasFactory;
+    protected $table = 'chat';
+
+    protected $fillable = [
+        'created',
+        'case_id',
+        'user_id',
+        'message',
+    ];
+
+    public $timestamps = false; // `created` を使うためタイムスタンプを無効化
 }

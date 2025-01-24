@@ -112,3 +112,11 @@ Route::prefix('cases')->group(function () {
 Route::post('/favorites', [FavoriteController::class, 'store']);
 Route::post('/favopopup', [FavoriteController::class, 'index']);
 Route::post('/favorites/check', [FavoriteController::class, 'checkFavorite']);
+
+//chat
+use App\Http\Controllers\ChatController;
+
+Route::prefix('chat')->group(function () {
+    Route::get('/{case_id}', [ChatController::class, 'index']); // チャット履歴取得
+    Route::post('/', [ChatController::class, 'store']); // 新しいメッセージを送信
+});
