@@ -116,7 +116,7 @@ Route::post('/favorites/check', [FavoriteController::class, 'checkFavorite']);
 //chat
 use App\Http\Controllers\ChatController;
 
-Route::prefix('chat')->group(function () {
+Route::middleware('auth:sanctum')->prefix('chat')->group(function () {
     Route::get('/{case_id}', [ChatController::class, 'index']); // チャット履歴取得
     Route::post('/', [ChatController::class, 'store']); // 新しいメッセージを送信
 });

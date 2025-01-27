@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Chat;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ChatController extends Controller
 {
@@ -12,14 +13,30 @@ class ChatController extends Controller
     public function index($case_id)
     {
         try {
-            $messages = Chat::where('case_id', $case_id)
-                ->orderBy('created', 'asc') // 日時順にソート
+            // チャットデータを user テーブルと JOIN
+            $messages = DB::table('chat')
+                ->join('user', 'chat.user_id', '=', 'user.user_id') // user テーブルを JOIN
+                ->select(
+                    'chat.created', // チャットの送信日時
+                    'chat.case_id', // 依頼ID
+                    'chat.user_id', // ユーザID
+                    'chat.message', // メッセージ本文
+                    'user.nickname' // ユーザーのニックネーム
+                )
+                ->where('chat.case_id', $case_id) // 指定された case_id のみ取得
+                ->orderBy('chat.created', 'asc') // メッセージを送信順に並べる
                 ->get();
 
-            return response()->json(['messages' => $messages], 200);
+            return response()->json([
+                'success' => true,
+                'messages' => $messages
+            ], 200);
         } catch (\Exception $e) {
             Log::error('チャット履歴取得エラー:', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'チャット履歴の取得に失敗しました'], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'チャット履歴の取得に失敗しました。'
+            ], 500);
         }
     }
 
@@ -33,25 +50,31 @@ class ChatController extends Controller
         ]);
 
         try {
+            DB::beginTransaction(); // トランザクション開始
+
+            // メッセージを保存
             $chat = Chat::create($validated);
-            return response()->json(['message' => $chat], 201);
+
+            // 保存したメッセージと関連するユーザーのニックネームを取得
+            $savedMessage = DB::table('chat')
+                ->join('user', 'chat.user_id', '=', 'user.user_id')
+                ->select(
+                    'chat.created',
+                    'chat.case_id',
+                    'chat.user_id',
+                    'chat.message',
+                    'user.nickname'
+                )
+                ->where('chat.id', $chat->id) // 新しく作成したメッセージを取得
+                ->first();
+
+            DB::commit(); // トランザクションをコミット
+
+            return response()->json(['message' => $savedMessage], 201);
         } catch (\Exception $e) {
+            DB::rollBack(); // トランザクションをロールバック
             Log::error('メッセージ送信エラー:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'メッセージの送信に失敗しました'], 500);
         }
     }
-    public function getMessages(Request $request, $caseId)
-    {
-        try {
-            $messages = Chat::where('case_id', $caseId)
-                ->orderBy('created', 'asc') // メッセージを時系列順に並べる
-                ->get();
-
-            return response()->json($messages, 200);
-        } catch (\Exception $e) {
-            \Log::error('メッセージ取得エラー: ' . $e->getMessage());
-            return response()->json(['error' => 'メッセージ取得に失敗しました'], 500);
-        }
-    }
-
 }
