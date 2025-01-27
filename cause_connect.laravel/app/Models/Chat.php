@@ -15,5 +15,19 @@ class Chat extends Model
         'message',
     ];
 
-    public $timestamps = false; // `created` を使うためタイムスタンプを無効化
+    public $timestamps = false; // タイムスタンプを無効化
+
+    // プライマリキーを無効化
+    protected $primaryKey = null;
+    public $incrementing = false;
+
+    // 自動的に created を設定する（任意）
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created = $model->created ?? now(); // 現在時刻を設定
+        });
+    }
 }

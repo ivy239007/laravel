@@ -50,29 +50,23 @@ class ChatController extends Controller
         ]);
 
         try {
-            DB::beginTransaction(); // トランザクション開始
-
             // メッセージを保存
-            $chat = Chat::create($validated);
+            Chat::create($validated);
 
-            // 保存したメッセージと関連するユーザーのニックネームを取得
-            $savedMessage = DB::table('chat')
+            // 必要に応じて最後に保存されたメッセージを取得
+            $lastMessage = DB::table('chat')
                 ->join('user', 'chat.user_id', '=', 'user.user_id')
-                ->select(
-                    'chat.created',
-                    'chat.case_id',
-                    'chat.user_id',
-                    'chat.message',
-                    'user.nickname'
-                )
-                ->where('chat.id', $chat->id) // 新しく作成したメッセージを取得
+                ->select('chat.created', 'chat.case_id', 'chat.user_id', 'chat.message', 'user.nickname')
+                ->where([
+                    ['chat.case_id', '=', $validated['case_id']],
+                    ['chat.user_id', '=', $validated['user_id']],
+                    ['chat.message', '=', $validated['message']],
+                ])
+                ->orderBy('chat.created', 'desc') // 送信時間で並べ替え
                 ->first();
 
-            DB::commit(); // トランザクションをコミット
-
-            return response()->json(['message' => $savedMessage], 201);
+            return response()->json(['message' => $lastMessage], 201);
         } catch (\Exception $e) {
-            DB::rollBack(); // トランザクションをロールバック
             Log::error('メッセージ送信エラー:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'メッセージの送信に失敗しました'], 500);
         }
