@@ -54,14 +54,14 @@ class Cause_Connect_CaseController extends Controller
 
             $addressId = $address->address_id;
             Log::info('Generated Address ID: ' . $addressId);
-
+            Log::info('Generated google_mapURL: ' . $request->google_map);
             // 依頼情報を登録
             $case = RequestModel::create([
                 'client_id' => $request->client_id, //依頼者ID
                 'case_name' => $request->case_name, //依頼名
                 'lower_limit' => $request->lower_limit, //下限人数
                 'upper_limit' => $request->upper_limit, //上限人数
-                'exec_date' => $request->exec_date, //活動日
+                'exec_date' => now(), //活動日
                 'start_activty' => $request->start_activty, // 活動開始時間
                 'end_activty' => $request->end_activty, // 活動終了時間
                 'address_id' => $addressId, // 住所ID
@@ -76,11 +76,11 @@ class Cause_Connect_CaseController extends Controller
                 'content' => $request->content, // 内容(基本情報)
                 'contents' => $request->contents, // 内容(依頼詳細)
                 'google_map' => $request->google_map, //追加 googleマップのURL
-                'case_date' => now(), //依頼投稿時間
+                'case_date' => $request->exec_date, //依頼投稿時間
                 'state_id' => $request->state_id, // 進捗状況ID
                 'num_people' => $request->participation_id, // 初期値を設定 現在参加人数
             ]);
-
+            Log::info('Generated 依頼投稿内容: ' . $case);
             $caseId = $case->id;
             Log::info('Generated Case ID: ' . $caseId);
 
@@ -295,7 +295,7 @@ class Cause_Connect_CaseController extends Controller
         try {
             // 依頼を削除する
             $deleted = DB::table('case')->where('case_id', $case_id)->delete();
-    
+
             if ($deleted) {
                 \Log::info("Case ID {$case_id} が正常に削除されました。");
                 return response()->json(['message' => '依頼が削除されました。'], 200);
@@ -308,5 +308,5 @@ class Cause_Connect_CaseController extends Controller
             return response()->json(['error' => '依頼の削除に失敗しました。'], 500);
         }
     }
-    
+
 }
